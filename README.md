@@ -36,11 +36,11 @@ Ideal for quick gameplay without a GUI and for educational/analytical purposes.
     cd MakaoGame
     ```
 
-2**Requirements:**
+2.  **Requirements:**
     * Python 3.12 (version used)
     * Pandas 2.2.2 (for CSV saving)
 
-3**Install Dependencies:**
+3.  **Install Dependencies:**
     ```bash
     pip install pandas
     ```
