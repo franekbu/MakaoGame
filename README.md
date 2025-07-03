@@ -30,18 +30,17 @@ Ideal for quick gameplay without a GUI and for educational/analytical purposes.
 * Scoreboard after the game ends.
 
 ## Installation
-[//]: # (Instrukcje krok po kroku, jak przygotować środowisko do uruchomienia projektu.)
-[//]: # (1.  **Klonowanie repozytorium &#40;jeśli dotyczy&#41;:**)
-[//]: # (    ```bash)
-[//]: # (    git clone [adres_repozytorium])
-[//]: # (    cd [nazwa_projektu])
-[//]: # (    ```)
+1.  **Cloning repository:**
+    ```bash
+    git clone git@github.com:franekbu/MakaoGame.git
+    cd MakaoGame
+    ```
 
-1.  **Requirements:**
+2**Requirements:**
     * Python 3.12 (version used)
     * Pandas 2.2.2 (for CSV saving)
 
-2.  **Install Dependencies:**
+3**Install Dependencies:**
     ```bash
     pip install pandas
     ```
