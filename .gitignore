@@ -1,0 +1,5 @@
+.idea/
+game_data/
+informations/
+*.pyc
+__pycache__/
