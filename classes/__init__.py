@@ -7,9 +7,9 @@ from .player import Player, BotPlayer
 from .cards import Card
 
 # importing variables (consts)
-from .dictionaries import NAMES, FUNCTIONS, COLOURS, CSV_HEADERS
+from .dictionaries import NAMES, FUNCTIONS, COLOURS, CSV_HEADERS, DATA_DIR_PATH
 
 # tells what will ve imported if * used
-__all__ = ['Card', 'Player', 'BotPlayer', 'Game', 'NAMES', 'FUNCTIONS', 'COLOURS', 'CSV_HEADERS']
+__all__ = ['Card', 'Player', 'BotPlayer', 'Game', 'NAMES', 'FUNCTIONS', 'COLOURS', 'CSV_HEADERS', 'DATA_DIR_PATH']
 
 print("Module 'classes' was imported!") # telling if import was successful

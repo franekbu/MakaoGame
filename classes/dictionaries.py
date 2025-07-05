@@ -33,3 +33,5 @@ CSV_HEADERS:list[str] = ['Game_move','Player_name','Is_bot','Player_turn','Is_fi
                          'Player_deck_size','Played_cards_count','Played_cards_names','Pulled_cards_count',
                          'Pulled_cards_names','Top_card_met','Is_card_functional','Card_function',
                          'Demanded_num','Demanded_colour']
+
+DATA_DIR_PATH:str = './game_data'

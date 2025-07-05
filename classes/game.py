@@ -26,7 +26,7 @@ class Game:
         self.current_player:Player|BotPlayer = self.players[0]
         self.turn:int = 0
         self.game_data:list[dict[str,str|int|bool]] = []
-        self.data_dir_path:str = './game_data'
+        self.data_dir_path:str = c_dict.DATA_DIR_PATH
 
     # maybe upgrade it a little
     def __str__(self):
