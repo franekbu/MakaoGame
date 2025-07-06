@@ -8,9 +8,10 @@ from .cards import Card
 from .utils import get_data_path
 
 # importing variables (consts)
-from .dictionaries import NAMES, FUNCTIONS, COLOURS, CSV_HEADERS, DATA_DIR_NAME
+from .dictionaries import NAMES, FUNCTIONS, COLOURS, CSV_HEADERS, DATA_DIR_NAME, MAX_NUM_OF_PLAYERS
 
 # tells what will ve imported if * used
-__all__ = ['Card', 'Player', 'BotPlayer', 'Game', 'get_data_path', 'NAMES', 'FUNCTIONS', 'COLOURS', 'CSV_HEADERS', 'DATA_DIR_NAME']
+__all__ = ['Card', 'Player', 'BotPlayer', 'Game', 'get_data_path', 'NAMES', 'FUNCTIONS', 'COLOURS', 'CSV_HEADERS',
+           'DATA_DIR_NAME', 'MAX_NUM_OF_PLAYERS']
 
 print("Module 'classes' was imported!") # telling if import was successful
