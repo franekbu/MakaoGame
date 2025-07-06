@@ -1,5 +1,6 @@
 from classes.player import Player, BotPlayer
 from classes import dictionaries as c_dict
+from classes.utils import get_data_path
 from classes.cards import Card
 from datetime import datetime
 import pandas as pd
@@ -26,7 +27,7 @@ class Game:
         self.current_player:Player|BotPlayer = self.players[0]
         self.turn:int = 0
         self.game_data:list[dict[str,str|int|bool]] = []
-        self.data_dir_path:str = c_dict.DATA_DIR_PATH
+        self.data_dir_path:str = get_data_path()
 
     # maybe upgrade it a little
     def __str__(self):
