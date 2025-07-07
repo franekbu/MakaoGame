@@ -56,8 +56,19 @@ class Game:
         """Returns string of cards in chosen deck that is ready to be printed"""
         return ', '.join([f'{i + 1}:{card}' for i, card in enumerate(deck_to_show)])
 
-    @staticmethod
-    def _create_players(**pre_names:list[str]) -> list[Player | BotPlayer]:
+    def _create_players_from_kwargs(self, p_names:list[str], b_names:list[str]) -> dict[str, list[str]]:
+        """Checks if names from kwargs pass conditions and returns them as dict of keys: bots, players"""
+        names:dict[str, list[str]]
+        len_p:int = len(p_names)
+        len_b:int = len(b_names)
+
+        if 0 > len_p + len_b or len_p + len_b > c_dict.MAX_NUM_OF_PLAYERS:
+            raise ValueError('Too many bots and players names given as kwargs!')
+        else:
+
+
+
+    def _create_players(self, **pre_names:list[str]) -> list[Player | BotPlayer]:
         """available kwargs: players, bots\n
         If no kwargs used ask user what names and how may human or bot players he wants\n
         returns list of objects of players from class Player and BotPlayer
@@ -65,26 +76,29 @@ class Game:
         players_names:list[str] = []
         bots_names:list[str] = []
         if len(pre_names) > 0:
-            try:
-                if len(pre_names['players']) > 0:
-                    for name in pre_names['players']:
-                        while name in players_names:
-                            print('You have present repetitive names')
-                            print('Names cannot repeat!')
-                            name = input(f'What is new {name} name?')
-                        players_names.append(name)
-            except KeyError:
-                print('No humans players.')
-            try:
-                if len(pre_names['bots']) > 0:
-                    for name in pre_names['bots']:
-                        while name in players_names or name in bots_names:
-                            print('You have present repetitive names')
-                            print('Names cannot repeat!')
-                            name = input(f'What is new {name} name?')
-                        bots_names.append(name)
-            except KeyError:
-                print('No bots players.')
+            self._create_players_from_kwargs(p_names=pre_names.get('players', []),
+                                             b_names=pre_names.get('bots', [])
+                                             )
+            # try:
+            #     if len(pre_names['players']) > 0:
+            #         for name in pre_names['players']:
+            #             while name in players_names:
+            #                 print('You have present repetitive names')
+            #                 print('Names cannot repeat!')
+            #                 name = input(f'What is new {name} name?')
+            #             players_names.append(name)
+            # except KeyError:
+            #     print('No humans players.')
+            # try:
+            #     if len(pre_names['bots']) > 0:
+            #         for name in pre_names['bots']:
+            #             while name in players_names or name in bots_names:
+            #                 print('You have present repetitive names')
+            #                 print('Names cannot repeat!')
+            #                 name = input(f'What is new {name} name?')
+            #             bots_names.append(name)
+            # except KeyError:
+            #     print('No bots players.')
         else:
             num_players:int
             num_bots:int = 0
