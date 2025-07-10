@@ -56,17 +56,28 @@ class Game:
         """Returns string of cards in chosen deck that is ready to be printed"""
         return ', '.join([f'{i + 1}:{card}' for i, card in enumerate(deck_to_show)])
 
-    def _create_players_from_kwargs(self, p_names:list[str], b_names:list[str]) -> dict[str, list[str]]:
-        """Checks if names from kwargs pass conditions and returns them as dict of keys: bots, players"""
-        names:dict[str, list[str]]
-        len_p:int = len(p_names)
-        len_b:int = len(b_names)
+    @staticmethod
+    def _create_players_from_kwargs(pre_players_names:list[str], pre_bots_names:list[str]) -> list[Player | BotPlayer]:
+        """Checks if names from kwargs pass conditions, then creates from them players and bots and returns them"""
+        len_p:int = len(pre_players_names)
+        len_b:int = len(pre_bots_names)
+        non_duplicated_names:set[str] = set(pre_players_names + pre_bots_names)
 
-        if 0 > len_p + len_b or len_p + len_b > c_dict.MAX_NUM_OF_PLAYERS:
-            raise ValueError('Too many bots and players names given as kwargs!')
+        if len_p + len_b <= 0 or len_p + len_b > c_dict.MAX_NUM_OF_PLAYERS:
+            raise ValueError('Too many or none bots and players names given as kwargs!')
+        elif len(non_duplicated_names) != len_b + len_p:
+            raise ValueError('Duplicated names provided!')
         else:
+            players:list[Player] = []
+            bots:list[BotPlayer] = []
 
+            for name in pre_players_names:
+                players.append(Player(player_name=name))
 
+            for name in pre_bots_names:
+                bots.append(BotPlayer(bot_name=name))
+
+            return players + bots
 
     def _create_players(self, **pre_names:list[str]) -> list[Player | BotPlayer]:
         """available kwargs: players, bots\n
@@ -76,29 +87,9 @@ class Game:
         players_names:list[str] = []
         bots_names:list[str] = []
         if len(pre_names) > 0:
-            self._create_players_from_kwargs(p_names=pre_names.get('players', []),
-                                             b_names=pre_names.get('bots', [])
-                                             )
-            # try:
-            #     if len(pre_names['players']) > 0:
-            #         for name in pre_names['players']:
-            #             while name in players_names:
-            #                 print('You have present repetitive names')
-            #                 print('Names cannot repeat!')
-            #                 name = input(f'What is new {name} name?')
-            #             players_names.append(name)
-            # except KeyError:
-            #     print('No humans players.')
-            # try:
-            #     if len(pre_names['bots']) > 0:
-            #         for name in pre_names['bots']:
-            #             while name in players_names or name in bots_names:
-            #                 print('You have present repetitive names')
-            #                 print('Names cannot repeat!')
-            #                 name = input(f'What is new {name} name?')
-            #             bots_names.append(name)
-            # except KeyError:
-            #     print('No bots players.')
+            return self._create_players_from_kwargs(pre_players_names=pre_names.get('players', []),
+                                                    pre_bots_names=pre_names.get('bots', [])
+                                                    )
         else:
             num_players:int
             num_bots:int = 0
