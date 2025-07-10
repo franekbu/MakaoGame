@@ -13,7 +13,7 @@ class Game:
         """available kwargs: players, bots\n
         Creates class that handles all logic in a game
         """
-        self.players:list[Player|BotPlayer] = self._create_players(**names)
+        self.players:list[Player|BotPlayer] = self._handle_players_creation(**names)
         self.finishers:list[Player|BotPlayer] = []
         self.main_deck:list[Card] = self._create_deck()
         self._dealing_cards()
@@ -63,8 +63,8 @@ class Game:
         len_b:int = len(pre_bots_names)
         non_duplicated_names:set[str] = set(pre_players_names + pre_bots_names)
 
-        if len_p + len_b <= 0 or len_p + len_b > c_dict.MAX_NUM_OF_PLAYERS:
-            raise ValueError('Too many or none bots and players names given as kwargs!')
+        if len_p + len_b < 2 or len_p + len_b > c_dict.MAX_NUM_OF_PLAYERS:
+            raise ValueError('Too many or too little bots and players names given as kwargs!')
         elif len(non_duplicated_names) != len_b + len_p:
             raise ValueError('Duplicated names provided!')
         else:
@@ -79,62 +79,75 @@ class Game:
 
             return players + bots
 
-    def _create_players(self, **pre_names:list[str]) -> list[Player | BotPlayer]:
+    @staticmethod
+    def _create_input_players() -> list[Player | BotPlayer]:
+        """Ask player how many players: human or bot, he wants to play, and returns the list of them"""
+        play_with_bots:str = input('Do you want to play with bots?')
+        num_players:int = 0
+        num_bots:int = 0
+        if play_with_bots.lower() in ['y', 'yes']:
+            while True:
+                try:
+                    num_players = int(input('How many human players do you want to play?'))
+                    num_bots = int(input('How many bots players do you want to play?'))
+                    if num_players + num_bots < 2 or num_players + num_bots > c_dict.MAX_NUM_OF_PLAYERS:
+                        print(f'Number of all players combined (humans and bots) must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!')
+                        continue
+                    else:
+                        break
+
+                except ValueError:
+                    print('Invalid input!\nPlease input only numbers')
+                    continue
+        else:
+            while True:
+                try:
+                    num_players = int(input('How many human players do you want to play?'))
+                    if num_players < 2 or num_players > c_dict.MAX_NUM_OF_PLAYERS:
+                        print(
+                            f'Number of all players must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!')
+                        continue
+                    else:
+                        break
+
+                except ValueError:
+                    print('Invalid input!\nPlease input only numbers')
+                    continue
+
+        used_names:list[str] = []
+        players:list[Player] = []
+        bots:list[BotPlayer] = []
+
+        for i in range(num_players):
+            name:str = input(f'What is {i + 1}.player name?')
+            while name in used_names:
+                print('Names cannot repeat!')
+                name = input(f'What is {i + 1}.player name?')
+            players.append(Player(player_name=name))
+            used_names.append(name)
+
+        for i in range(num_bots):
+            name:str = input(f'What is {i + 1}.bot name?')
+            while name in used_names:
+                print('Names cannot repeat!')
+                name = input(f'What is {i + 1}.bot name?')
+            bots.append(BotPlayer(bot_name=name))
+            used_names.append(name)
+
+        return players + bots
+
+    def _handle_players_creation(self, **pre_names:list[str]) -> list[Player | BotPlayer]:
         """available kwargs: players, bots\n
         If no kwargs used ask user what names and how may human or bot players he wants\n
         returns list of objects of players from class Player and BotPlayer
         """
-        players_names:list[str] = []
-        bots_names:list[str] = []
+        all_players:list[Player|BotPlayer]
         if len(pre_names) > 0:
-            return self._create_players_from_kwargs(pre_players_names=pre_names.get('players', []),
-                                                    pre_bots_names=pre_names.get('bots', [])
-                                                    )
+             all_players = self._create_players_from_kwargs(
+                 pre_players_names=pre_names.get('players', []),
+                 pre_bots_names=pre_names.get('bots', []))
         else:
-            num_players:int
-            num_bots:int = 0
-            play_with_bots:str = input('Do you want to play with bots?')
-            if play_with_bots.lower() in ['yes', 'y']:
-                try:
-                    num_players = int(input('How many human players do you want to play?'))
-                    num_bots = int(input('How many bots players do you want to play?'))
-                    while num_players + num_bots < 2 or num_players + num_bots > 5:
-                        print('Number of all players combined (humans and bots) must be within 2 and 5!')
-                        num_players = int(input('How many human players do you want to play?'))
-                        num_bots = int(input('How many bots players do you want to play?'))
-                except ValueError:
-                    print('You gave a letter not a number!')
-                    print('There will be 1 human player and 1 bot.')
-                    num_players = 1
-                    num_bots = 1
-            else:
-                try:
-                    num_players = int(input('How many players do you want to play?: '))
-                    while num_players < 2 or num_players > 5:
-                        print('Number of players must be within 2 and 5')
-                        num_players = int(input('How many players do you want to play?: '))
-                except ValueError:
-                    print('You gave a letter not a number!')
-                    print('There will be 2 players')
-                    num_players = 2
-
-            for num in range(num_players):
-                name = input(f'What is {num + 1}. players name?')
-                while name in players_names:
-                    print('Names cannot repeat!')
-                    name = input(f'What is new {num + 1}. players name?')
-                players_names.append(name)
-
-            for num in range(num_bots):
-                name = input(f'What is {num + 1}. bot name?')
-                while name in bots_names:
-                    print('Names cannot repeat!')
-                    name = input(f'What is new {num + 1}. bot name?')
-                bots_names.append(name)
-
-        players:list[Player] = [Player(player_name=name) for name in players_names]
-        bots:list[BotPlayer] = [BotPlayer(bot_name=name) for name in bots_names]
-        all_players:list[Player|BotPlayer] = players + bots
+            all_players = self._create_input_players()
 
         if input('Do you want to shuffle the order of players?').lower() in ['yes', 'y']:
             random.shuffle(all_players)
