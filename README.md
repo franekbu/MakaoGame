@@ -63,7 +63,8 @@ After running the game, it can ask some questions about e.g. how many human or b
     ├── game.py                 # Core game logic (mechanics, turns, data management)
     ├── player.py               # Player definition (human and bot)
     ├── cards.py                # Card definition
-    └── dictionaries.py         # Dictionaries with card data, functions and .csv headers
+    ├── dictionaries.py         # Dictionaries with card data, functions and .csv headers
+    └── utils.py                # Functions that can be used among many classes
 └── game_data/                  # Directory for game logs (automatically generated)
     └── [timestamp].csv         # Example CSV files with data from each game turn
 ```
