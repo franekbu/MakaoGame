@@ -359,7 +359,7 @@ class Game:
         - what is his deck
         """
         player:Player|BotPlayer = self.current_player
-        print(f'Card on a table: {self.play_deck[0].name}{self.play_deck[0].symbol}')
+        print(f'Card on a table: {self.play_deck[0]}')
         if self.demands[0] in ['number', 'colour']:
             print(f'Your are demanded to play: {self.demands[1]}')
         print(f'{player.name} this is your deck:\n{self._deck_to_print(player.deck)}')

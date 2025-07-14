@@ -37,3 +37,8 @@ CSV_HEADERS:list[str] = ['Game_move','Player_name','Is_bot','Player_turn','Is_fi
 DATA_DIR_NAME:str = 'game_data'
 
 MAX_NUM_OF_PLAYERS:int = 6
+
+ASCII_RED:str = '31'
+ASCII_BLACK:str = '30'
+
+ASCII_BG:str = '47'
