@@ -120,7 +120,7 @@ class Game:
 
         for i in range(num_players):
             name:str = input(f'What is {i + 1}.player name?')
-            while name in used_names:
+            while name.replace(" ", "") in used_names:
                 print('Names cannot repeat!')
                 name = input(f'What is {i + 1}.player name?')
             players.append(Player(player_name=name))
@@ -128,7 +128,7 @@ class Game:
 
         for i in range(num_bots):
             name:str = input(f'What is {i + 1}.bot name?')
-            while name in used_names:
+            while name.replace(" ", "") in used_names:
                 print('Names cannot repeat!')
                 name = input(f'What is {i + 1}.bot name?')
             bots.append(BotPlayer(bot_name=name))
