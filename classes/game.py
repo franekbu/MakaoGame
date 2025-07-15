@@ -262,7 +262,10 @@ class Game:
                     self.stack_pull += self.demands[1]*(num_cards_played - 1)
 
         elif self.demands[0] in ['colour', 'number']:
-            if self.stack_demands > 1:
+            if num_cards_played > 1 and self.demands[0] == 'colour':
+                self.demands = [None]
+                self.stack_demands = 0
+            elif self.stack_demands > 1:
                 self.stack_demands -= 1
             else:
                 self.stack_demands = 0
