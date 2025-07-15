@@ -438,7 +438,7 @@ class Game:
             'Final_place': None,
             'Is_frozen': frozen_before,
             'Player_deck_size': deck_size_before,
-            'Top_card_met': str(top_card_before),
+            'Top_card_met': repr(top_card_before),
             'Played_cards_count': 0,
             'Played_cards_names': '',
             'Pulled_cards_count': 0,
@@ -457,13 +457,13 @@ class Game:
             # Normal case
             if cards_played > 0:
                 turn_data['Played_cards_count'] = cards_played
-                turn_data['Played_cards_names'] = '|'.join([str(self.play_deck[i]) for i in range(cards_played)])
+                turn_data['Played_cards_names'] = '|'.join([repr(self.play_deck[i]) for i in range(cards_played)])
             # didn't say makao
             elif cards_played < 0:
                 turn_data['Played_cards_count'] = cards_played + 5
-                turn_data['Played_cards_names'] = '|'.join([str(self.play_deck[i]) for i in range(cards_played + 5)])
+                turn_data['Played_cards_names'] = '|'.join([repr(self.play_deck[i]) for i in range(cards_played + 5)])
                 turn_data['Pulled_cards_count'] = 5
-                turn_data['Pulled_cards_names'] = '|'.join([str(self.current_player.deck[-i]) for i in range(1, 6)])
+                turn_data['Pulled_cards_names'] = '|'.join([repr(self.current_player.deck[-i]) for i in range(1, 6)])
 
             else:
                 raise Exception('Player played a card but len of his deck didnt change!')
@@ -480,7 +480,7 @@ class Game:
         elif not frozen_before:
             card_pulled:int = len(self.current_player.deck) - deck_size_before
             turn_data['Pulled_cards_count'] = card_pulled
-            turn_data['Pulled_cards_names'] = '|'.join([str(self.current_player.deck[-i]) for i in range(1, card_pulled + 1)])
+            turn_data['Pulled_cards_names'] = '|'.join([repr(self.current_player.deck[-i]) for i in range(1, card_pulled + 1)])
 
         self.game_data.append(turn_data)
 

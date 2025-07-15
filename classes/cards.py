@@ -17,6 +17,9 @@ class Card:
             color = f'\033[{c_dict.ASCII_BLACK};{c_dict.ASCII_BG}m'
         return f'{self.name}{color}{self.symbol}\033[0m'
 
+    def __repr__(self):
+        return f'{self.name}{self.symbol}'
+
     def __what_name(self) -> str:
         """Returns a card name """
         return c_dict.NAMES[self.__number]

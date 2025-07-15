@@ -40,5 +40,4 @@ MAX_NUM_OF_PLAYERS:int = 6
 
 ASCII_RED:str = '31'
 ASCII_BLACK:str = '30'
-
 ASCII_BG:str = '47'
