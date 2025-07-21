@@ -3,3 +3,4 @@ game_data/
 informations/
 *.pyc
 __pycache__/
+.venv/
