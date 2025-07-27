@@ -92,7 +92,6 @@ class Game:
                     num_bots = int(input('How many bots players do you want to play?'))
                     if num_players + num_bots < 2 or num_players + num_bots > c_dict.MAX_NUM_OF_PLAYERS:
                         print(f'Number of all players combined (humans and bots) must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!')
-                        continue
                     else:
                         break
 
@@ -106,7 +105,6 @@ class Game:
                     if num_players < 2 or num_players > c_dict.MAX_NUM_OF_PLAYERS:
                         print(
                             f'Number of all players must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!')
-                        continue
                     else:
                         break
 
@@ -142,7 +140,7 @@ class Game:
         returns list of objects of players from class Player and BotPlayer
         """
         all_players:list[Player|BotPlayer]
-        if len(pre_names) > 0:
+        if pre_names:
              all_players = self._create_players_from_kwargs(
                  pre_players_names=pre_names.get('players', []),
                  pre_bots_names=pre_names.get('bots', []))
@@ -196,7 +194,33 @@ class Game:
                 return []
         return new_cards
 
-    def _update_demands(self, num_cards_played:int) -> None:
+    def _handle_demands_colour(self) -> None:
+        if isinstance(self.current_player, BotPlayer):
+            self.demands = ['colour', self.current_player.choosing_demands('colour')]
+        else:
+            print(f'Available colours names: {self.colours}')
+            demanded_color:str = input('What colour do you demand?: ').lower()
+            while demanded_color not in self.colours:
+                print(f'Wrong colour!\nColours you can use are: {self.colours}')
+                print('Do not use symbols!')
+                demanded_color:str = input('So what colour do you demand?: ').lower()
+            self.demands = ['colour', demanded_color.capitalize()]
+
+        self.stack_demands = len(self.players)
+
+    def _handle_demands_number(self) -> None:
+        if isinstance(self.current_player, BotPlayer):
+            self.demands = ['number', self.current_player.choosing_demands('number')]
+        else:
+            demanded_number: str = input('What number do you demand?: ')
+            while 4 > int(demanded_number) or int(demanded_number) > 10:
+                print(f'Wrong number!\nNumbers you can use demand are between 5 and 10')
+                demanded_number: str = input('So what number do you demand?: ')
+            self.demands = ['number', demanded_number]
+
+        self.stack_demands = len(self.players)
+
+    def _handle_demands(self, num_cards_played:int) -> None:
         """Checks what demands new card has set and changes games demands according to them\n
             2/3/kings = ['add'] stack_pull+=,\n
             4 = ['pause'] stack_frozen +=,\n
@@ -222,38 +246,17 @@ class Game:
             elif self.play_deck[0].function[0] == 'pause':
                 self.demands = self.play_deck[0].function
                 self.stack_frozen += 1
-                print('demands == pause')
+
             elif self.play_deck[0].function[0] == 'demand':
-                # jack card played
                 if self.play_deck[0].function[1] == 'number':
-                    if type(self.current_player) == BotPlayer:
-                        self.demands = ['number', self.current_player.choosing_demands('number')]
-                    else:
-                        demanded_number:str = input('What number do you demand?: ')
-                        while 4 > int(demanded_number) or int(demanded_number) > 10:
-                            print(f'Wrong number!\nNumbers you can use demand are between 5 and 10')
-                            demanded_number:str = input('So what number do you demand?: ')
-                        self.demands = ['number', demanded_number]
-                    self.stack_demands = len(self.players)
-                # ace card played
+                    self._handle_demands_number()
+
                 elif self.play_deck[0].function[1] == 'colour':
-                    print(f'Available colours names: {self.colours}')
-                    if type(self.current_player) == BotPlayer:
-                        self.demands = ['colour', self.current_player.choosing_demands('colour')]
-                    else:
-                        demanded_color:str = input('What colour do you demand?: ').lower()
-                        while demanded_color not in self.colours:
-                            print(f'Wrong colour!\nColours you can use are: {self.colours}')
-                            print('Do not use symbols!')
-                            demanded_color:str = input('So what colour do you demand?: ').lower()
-                        self.demands = ['colour', demanded_color.capitalize()]
-                    self.stack_demands = len(self.players)
+                    self._handle_demands_colour()
                 else:
-                    print('you fucked sth up on demand demands ')
-                    raise ValueError
+                    raise ValueError('you fucked sth up on demanding demands')
             else:
-                print('you fucked up updating functional demands')
-                raise ValueError
+                raise ValueError('you fucked up updating functional demands')
 
             if num_cards_played > 1:
                 if self.demands[0] == 'pause':
@@ -281,7 +284,7 @@ class Game:
             self.play_deck.insert(0, card)
             player.deck.remove(card)
 
-        self._update_demands(len(cards_to_play))
+        self._handle_demands(len(cards_to_play))
 
         if not player.say_makao():
             player.deck.extend(self._pulled_cards(5))
@@ -405,7 +408,7 @@ class Game:
                     self._handle_player_move(player)
                     player.played_card = True
 
-                elif pass_or_play == 'pass' and type(player) == BotPlayer:
+                elif pass_or_play == 'pass' and isinstance(player, BotPlayer):
                     print('Bot passes his turn.\n')
 
             if not player.valid_cards or pass_or_play == 'pass':
@@ -435,7 +438,7 @@ class Game:
         turn_data:dict[str,str|int|bool|None] = {
             'Game_move': self.turn,
             'Player_name': self.current_player.name,
-            'Is_bot': type(self.current_player) == BotPlayer,
+            'Is_bot': isinstance(self.current_player, BotPlayer),
             'Player_turn': self.current_player.turn,
             'Is_finished': len(self.current_player.deck) == 0,
             'Final_place': None,
