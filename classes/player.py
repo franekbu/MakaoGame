@@ -1,4 +1,5 @@
 from classes.cards import Card
+from classes.utils import colour_string
 import random
 # from time import sleep
 
@@ -54,7 +55,7 @@ class Player:
                 if ',' in p_choice:
                     p_nums = p_choice.split(',')
                     while len(p_nums) not in [1, 3, 4]:
-                        print('You can only play 1 or 3 cards at once!')
+                        print(colour_string('You can only play 1 or 3 cards at once!', 'red'))
                         p_choice = input('What card/s you want to play?(give number/s of card/s): ')
                         p_nums = p_choice.split(',')
                 else:
@@ -65,12 +66,12 @@ class Player:
                     try:
                         card_num:int = int(num)
                         if card_num < 1 or card_num > len(self.deck):
-                            print('Given number must represent a card from deck!')
+                            print(colour_string('Given number must represent a card from deck!', 'red'))
                             break
                         else:
                             chosen_nums.append(card_num - 1)
                     except ValueError:
-                        print('You have to input a number!')
+                        print(colour_string('You have to input a number!','red'))
                         break
                 suc_choice = len(chosen_nums) == len(p_nums)
             return chosen_nums
@@ -82,7 +83,7 @@ class Player:
             chosen_cards = [self.deck[card] for card in _cards_from_deck()]
 
             if chosen_cards[0] == 'King' and len(chosen_cards) > 1:
-                print("You can't play few Kings because not all of them are functional")
+                print(colour_string("You can't play few Kings because not all of them are functional", 'red'))
                 good_cards = False
 
             elif self.checking_card(chosen_cards[0], cur_c, demands):
@@ -101,10 +102,10 @@ class Player:
         returns False if he didn't say when he had to"""
         makao_time = input().lower()
         if len(self.deck) == 1 and makao_time != 'makao':
-            print('FOOLLL!!!\nYou did not said makao\nYou pull 5 cards')
+            print(colour_string('FOOLLL!!!\nYou did not said makao\nYou pull 5 cards', 'red'))
             return False
         elif len(self.deck) == 0 and makao_time != 'after makao':
-            print('FOOLLL!!!\nYou did not said after makao\nYou pull 5 cards')
+            print(colour_string('FOOLLL!!!\nYou did not said after makao\nYou pull 5 cards', 'red'))
             return False
         else:
             return True
@@ -114,7 +115,7 @@ class Player:
         """Ask player if he wants to play in this turn or pass it, returns his answer"""
         response:str = input('Do you want to play or pass? ').lower()
         while response not in ['pass', 'play']:
-            print('You can only write: pass, play')
+            print(colour_string('You can only write: pass, play', 'red'))
             response = input('So what do you do? ').lower()
         return response
 

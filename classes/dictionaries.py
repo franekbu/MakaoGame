@@ -38,6 +38,11 @@ DATA_DIR_NAME:str = 'game_data'
 
 MAX_NUM_OF_PLAYERS:int = 6
 
-ASCII_RED:str = '31'
-ASCII_BLACK:str = '30'
-ASCII_BG:str = '47'
+ASCII_START: str = '\033['
+ASCII_END: str = '\033[0m'
+ASCII_COLOURS: dict[str, str] = {
+    'red': '31',
+    'black': '30',
+    'bg': '47',
+    'yellow': '33'
+}

@@ -1,6 +1,6 @@
 from classes.player import Player, BotPlayer
 from classes import dictionaries as c_dict
-from classes.utils import get_data_path
+from classes.utils import get_data_path, colour_string
 from classes.cards import Card
 from datetime import datetime
 import pandas as pd
@@ -91,7 +91,8 @@ class Game:
                     num_players = int(input('How many human players do you want to play?'))
                     num_bots = int(input('How many bots players do you want to play?'))
                     if num_players + num_bots < 2 or num_players + num_bots > c_dict.MAX_NUM_OF_PLAYERS:
-                        print(f'Number of all players combined (humans and bots) must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!')
+                        message: str = f'Number of all players combined (humans and bots) must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!'
+                        print(colour_string(message, 'red'))
                     else:
                         break
 
@@ -103,13 +104,13 @@ class Game:
                 try:
                     num_players = int(input('How many human players do you want to play?'))
                     if num_players < 2 or num_players > c_dict.MAX_NUM_OF_PLAYERS:
-                        print(
-                            f'Number of all players must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!')
+                        message: str = f'Number of all players must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!'
+                        print(colour_string(message, 'red'))
                     else:
                         break
 
                 except ValueError:
-                    print('Invalid input!\nPlease input only numbers')
+                    print(colour_string('Invalid input!\nPlease input only numbers', 'red'))
                     continue
 
         used_names:list[str] = []
@@ -119,7 +120,7 @@ class Game:
         for i in range(num_players):
             name:str = input(f'What is {i + 1}.player name?')
             while name.replace(" ", "") in used_names:
-                print('Names cannot repeat!')
+                print(colour_string('Names cannot repeat!', 'red'))
                 name = input(f'What is {i + 1}.player name?')
             players.append(Player(player_name=name))
             used_names.append(name)
@@ -127,7 +128,7 @@ class Game:
         for i in range(num_bots):
             name:str = input(f'What is {i + 1}.bot name?')
             while name.replace(" ", "") in used_names:
-                print('Names cannot repeat!')
+                print(colour_string('Names cannot repeat!', 'red'))
                 name = input(f'What is {i + 1}.bot name?')
             bots.append(BotPlayer(bot_name=name))
             used_names.append(name)
@@ -190,7 +191,8 @@ class Game:
                 new_cards.append(self.main_deck[0])
                 self.main_deck.pop(0)
             except IndexError:
-                print('You ran out of cards to pull\nPlay your damn cards!')
+                message: str = 'You ran out of cards to pull\nPlay your damn cards!'
+                print(colour_string(message, 'red'))
                 return []
         return new_cards
 
@@ -201,8 +203,9 @@ class Game:
             print(f'Available colours names: {self.colours}')
             demanded_color:str = input('What colour do you demand?: ').lower()
             while demanded_color not in self.colours:
-                print(f'Wrong colour!\nColours you can use are: {self.colours}')
-                print('Do not use symbols!')
+                message: str = 'Wrong colour!\nColours you can use are: {self.colours}'
+                print(colour_string(message, 'red'))
+                print(colour_string('Do not use symbols!', 'red'))
                 demanded_color:str = input('So what colour do you demand?: ').lower()
             self.demands = ['colour', demanded_color.capitalize()]
 
@@ -214,7 +217,8 @@ class Game:
         else:
             demanded_number: str = input('What number do you demand?: ')
             while 4 > int(demanded_number) or int(demanded_number) > 10:
-                print(f'Wrong number!\nNumbers you can use demand are between 5 and 10')
+                message: str = f'Wrong number!\nNumbers you can use demand are between 5 and 10'
+                print(colour_string(message, 'red'))
                 demanded_number: str = input('So what number do you demand?: ')
             self.demands = ['number', demanded_number]
 
@@ -318,7 +322,8 @@ class Game:
             if self.stack_demands == len(self.players):
                 self.stack_demands -= 1
 
-        print('Congrats!!! You finished the game!')
+        message: str = 'Congrats!!! You finished the game!'
+        print(colour_string(message, 'yellow'))
         self.finishers.append(player)
         self.players.remove(player)
 
@@ -329,7 +334,6 @@ class Game:
         player:Player|BotPlayer = self.current_player
         # TODO 2. Make available to play first pulled card if it can be played
         if self.demands[0] == 'pause':
-            print('sleep begins')
             player.frozen_rows = self.stack_frozen - 1  # - 1 because already he is frozen in this round
             self.stack_frozen = 0
             self.demands = [None]

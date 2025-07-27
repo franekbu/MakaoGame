@@ -1,4 +1,5 @@
 from classes import dictionaries as c_dict
+from classes.utils import colour_string
 
 class Card:
     def __init__(self, num:int, colour_series:int) -> None:
@@ -12,10 +13,10 @@ class Card:
 
     def __str__(self):
         if self.colour in ['Diamonds', 'Hearts']:
-            color = f'\033[{c_dict.ASCII_RED}m'
+            symbol = colour_string(self.symbol, 'red')
         else:
-            color = f'\033[{c_dict.ASCII_BLACK};{c_dict.ASCII_BG}m'
-        return f'{self.name}{color}{self.symbol}\033[0m'
+            symbol = colour_string(self.symbol, 'black', 'bg')
+        return f'{self.name}{symbol}'
 
     def __repr__(self):
         return f'{self.name}{self.symbol}'
