@@ -1,5 +1,6 @@
-from classes.cards import Card
-from classes.utils import colour_string
+from makao_game.cards import Card
+from makao_game.utils import colour_string
+
 import random
 # from time import sleep
 

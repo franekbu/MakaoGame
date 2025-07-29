@@ -1,7 +1,8 @@
-from classes.player import Player, BotPlayer
-from classes import dictionaries as c_dict
-from classes.utils import get_data_path, colour_string
-from classes.cards import Card
+from makao_game.player import Player, BotPlayer
+from makao_game import dictionaries as c_dict
+from makao_game.utils import get_data_path, colour_string
+from makao_game.cards import Card
+
 from datetime import datetime
 import pandas as pd
 import random

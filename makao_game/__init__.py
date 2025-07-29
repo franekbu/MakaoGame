@@ -15,4 +15,4 @@ from .dictionaries import (NAMES, FUNCTIONS, COLOURS, CSV_HEADERS, DATA_DIR_NAME
 __all__ = ['Card', 'Player', 'BotPlayer', 'Game', 'get_data_path', 'colour_string', 'NAMES', 'FUNCTIONS', 'COLOURS',
            'CSV_HEADERS', 'DATA_DIR_NAME', 'MAX_NUM_OF_PLAYERS', 'ASCII_START', 'ASCII_END', 'ASCII_COLOURS']
 
-print("Module 'classes' was imported!") # telling if import was successful
+print("Module 'makao_game' was imported!") # telling if import was successful

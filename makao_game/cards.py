@@ -1,5 +1,5 @@
-from classes import dictionaries as c_dict
-from classes.utils import colour_string
+from makao_game import dictionaries as c_dict
+from makao_game.utils import colour_string
 
 class Card:
     def __init__(self, num:int, colour_series:int) -> None:

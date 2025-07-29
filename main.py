@@ -1,4 +1,4 @@
-from classes import Game
+from makao_game import Game
 
 game = Game()
 

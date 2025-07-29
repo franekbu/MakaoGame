@@ -21,13 +21,14 @@ Ideal for quick gameplay without a GUI and for educational/analytical purposes.
 
 ## Features
 * Macao gameplay in a console environment.
-* Multiplayer support (human and bots) - from 2 to 5 players.
+* Multiplayer support (human and bots) - from 2 to 6 players.
 * Implementation of basic card functions (2, 3, 4, Jack, Queen, King, Ace).
 * Game state management (suit/number requests, freezes, card drawing).
 * Automatic logging of data from each turn to CSV files.
 * Card deck dynamically replenished from played cards.
 * "Macao" and "After Macao" announcement system.
 * Scoreboard after the game ends.
+* Coloured warnings in terminal.
 
 ## Installation
 1.  **Cloning repository:**
@@ -58,13 +59,13 @@ After running the game, it can ask some questions about e.g. how many human or b
 ```
 .
 ├── main.py                     # Main file to run a game
-└── classes/                    # Directory containing class definitions
+└── makao_game/                    # Directory containing class definitions
     ├── __init__.py             # Python package initialization
     ├── game.py                 # Core game logic (mechanics, turns, data management)
     ├── player.py               # Player definition (human and bot)
     ├── cards.py                # Card definition
     ├── dictionaries.py         # Dictionaries with card data, functions and .csv headers
-    └── utils.py                # Functions that can be used among many classes
+    └── utils.py                # Functions that can be used among many makao_game
 └── game_data/                  # Directory for game logs (automatically generated)
     └── [timestamp].csv         # Example CSV files with data from each game turn
 ```
@@ -115,6 +116,7 @@ Logged data includes:
 * Add GUI.
 * Enable the player to play the first drawn card immediately if it's valid.
 * Create class for analyzing .csv game data.
+* Discord bot
 
 
 ## Contact

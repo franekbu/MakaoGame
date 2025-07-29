@@ -1,4 +1,5 @@
-from classes import dictionaries as c_dict
+from makao_game import dictionaries as c_dict
+
 import os
 
 def get_data_path() -> str:
