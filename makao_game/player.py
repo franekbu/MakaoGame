@@ -1,8 +1,8 @@
-from makao_game.cards import Card
-from makao_game.utils import colour_string
-
 import random
 # from time import sleep
+
+from makao_game.cards import Card
+from makao_game.utils import colour_string
 
 class Player:
     def __init__(self, player_name:str) -> None:
@@ -199,7 +199,7 @@ class BotPlayer(Player):
                 other_cards:list[Card] = [card for card in self.deck if
                                            card.name == first_card.name and card != first_card]
                 chosen_cards.extend(other_cards)
-                print(f'Bot played multiple cards:')
+                print('Bot played multiple cards:')
                 for _card in chosen_cards:
                     print(_card)
                 return chosen_cards

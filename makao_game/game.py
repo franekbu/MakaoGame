@@ -1,13 +1,12 @@
+from datetime import datetime
+import pandas as pd  # type: ignore
+import random
+import os
+
 from makao_game.player import Player, BotPlayer
 from makao_game import dictionaries as c_dict
 from makao_game.utils import get_data_path, colour_string
 from makao_game.cards import Card
-
-from datetime import datetime
-import pandas as pd
-import random
-import os
-
 
 class Game:
     def __init__(self, **names:list[str]):
@@ -27,7 +26,7 @@ class Game:
         self.reverse_order:bool = False
         self.current_player:Player|BotPlayer = self.players[0]
         self.turn:int = 0
-        self.game_data:list[dict[str,str|int|bool]] = []
+        self.game_data:list[dict[str,str|int|bool|None]] = []
         self.data_dir_path:str = get_data_path()
 
     # maybe upgrade it a little
@@ -78,7 +77,7 @@ class Game:
             for name in pre_bots_names:
                 bots.append(BotPlayer(bot_name=name))
 
-            return players + bots
+        return [*players, *bots]
 
     @staticmethod
     def _create_input_players() -> list[Player | BotPlayer]:
@@ -92,8 +91,8 @@ class Game:
                     num_players = int(input('How many human players do you want to play?'))
                     num_bots = int(input('How many bots players do you want to play?'))
                     if num_players + num_bots < 2 or num_players + num_bots > c_dict.MAX_NUM_OF_PLAYERS:
-                        message: str = f'Number of all players combined (humans and bots) must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!'
-                        print(colour_string(message, 'red'))
+                        print(colour_string(text=f'Number of all players combined (humans and bots) must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!'
+                                            ,colour='red'))
                     else:
                         break
 
@@ -105,8 +104,8 @@ class Game:
                 try:
                     num_players = int(input('How many human players do you want to play?'))
                     if num_players < 2 or num_players > c_dict.MAX_NUM_OF_PLAYERS:
-                        message: str = f'Number of all players must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!'
-                        print(colour_string(message, 'red'))
+                        print(colour_string(text=f'Number of all players must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!'
+                                            ,colour='red'))
                     else:
                         break
 
@@ -118,8 +117,9 @@ class Game:
         players:list[Player] = []
         bots:list[BotPlayer] = []
 
+        name: str
         for i in range(num_players):
-            name:str = input(f'What is {i + 1}.player name?')
+            name = input(f'What is {i + 1}.player name?')
             while name.replace(" ", "") in used_names:
                 print(colour_string('Names cannot repeat!', 'red'))
                 name = input(f'What is {i + 1}.player name?')
@@ -127,14 +127,14 @@ class Game:
             used_names.append(name)
 
         for i in range(num_bots):
-            name:str = input(f'What is {i + 1}.bot name?')
+            name = input(f'What is {i + 1}.bot name?')
             while name.replace(" ", "") in used_names:
                 print(colour_string('Names cannot repeat!', 'red'))
                 name = input(f'What is {i + 1}.bot name?')
             bots.append(BotPlayer(bot_name=name))
             used_names.append(name)
 
-        return players + bots
+        return [*players, *bots]
 
     def _handle_players_creation(self, **pre_names:list[str]) -> list[Player | BotPlayer]:
         """available kwargs: players, bots\n
@@ -143,9 +143,9 @@ class Game:
         """
         all_players:list[Player|BotPlayer]
         if pre_names:
-             all_players = self._create_players_from_kwargs(
-                 pre_players_names=pre_names.get('players', []),
-                 pre_bots_names=pre_names.get('bots', []))
+            all_players = self._create_players_from_kwargs(
+                pre_players_names=pre_names.get('players', []),
+                pre_bots_names=pre_names.get('bots', []))
         else:
             all_players = self._create_input_players()
 
@@ -207,7 +207,7 @@ class Game:
                 message: str = 'Wrong colour!\nColours you can use are: {self.colours}'
                 print(colour_string(message, 'red'))
                 print(colour_string('Do not use symbols!', 'red'))
-                demanded_color:str = input('So what colour do you demand?: ').lower()
+                demanded_color = input('So what colour do you demand?: ').lower()
             self.demands = ['colour', demanded_color.capitalize()]
 
         self.stack_demands = len(self.players)
@@ -218,9 +218,9 @@ class Game:
         else:
             demanded_number: str = input('What number do you demand?: ')
             while 4 > int(demanded_number) or int(demanded_number) > 10:
-                message: str = f'Wrong number!\nNumbers you can use demand are between 5 and 10'
+                message: str = 'Wrong number!\nNumbers you can use demand are between 5 and 10'
                 print(colour_string(message, 'red'))
-                demanded_number: str = input('So what number do you demand?: ')
+                demanded_number = input('So what number do you demand?: ')
             self.demands = ['number', demanded_number]
 
         self.stack_demands = len(self.players)
@@ -236,7 +236,10 @@ class Game:
             # '2' or '3' or king♥ card played
             if self.play_deck[0].function[0] == 'add':
                 self.demands = self.play_deck[0].function
-                self.stack_pull += self.demands[1]
+                if isinstance(self.demands[1], int):
+                    self.stack_pull += self.demands[1]
+                else:
+                    raise TypeError('Wrong type of demands[1]')
             # king♠ card played
             elif self.play_deck[0].function[0] == 'subtract':
                 self.reverse_order = not self.reverse_order
@@ -264,10 +267,16 @@ class Game:
                 raise ValueError('you fucked up updating functional demands')
 
             if num_cards_played > 1:
-                if self.demands[0] == 'pause':
-                    self.stack_frozen += num_cards_played - 1
-                elif self.demands[0] == 'add':
-                    self.stack_pull += self.demands[1]*(num_cards_played - 1)
+                if isinstance(self.demands[0], str):
+                    if self.demands[0] == 'pause':
+                        self.stack_frozen += num_cards_played - 1
+                    elif self.demands[0] == 'add':
+                        if isinstance(self.demands[1], int):
+                            self.stack_pull += self.demands[1]*(num_cards_played - 1)
+                        else:
+                            raise TypeError('Wrong type of demands[1]')
+                else:
+                    raise TypeError('Wrong type of demands[0]')
 
         elif self.demands[0] in ['colour', 'number']:
             if num_cards_played > 1 and self.demands[0] == 'colour':
@@ -329,7 +338,7 @@ class Game:
         self.players.remove(player)
 
     def _handle_no_play_action(self, passed:bool) -> None:
-        """Handles logic when player didnt have valid cards or passed his turn
+        """Handles logic when player didn't have valid cards or passed his turn
         accordingly changes demands, stacks and decide how much player has to pull
         """
         player:Player|BotPlayer = self.current_player
@@ -392,7 +401,7 @@ class Game:
     def _player_turn(self, player: Player | BotPlayer) -> None:
         """All logic about player's turn"""
 
-        player.played_card = False # have to reset it every new turn so if he dont make it wont show he did from the last turn
+        player.played_card = False # have to reset it every new turn so if he doesn't make it won't show he did from the last turn
         was_frozen:bool = False
         start_deck_size:int = len(self.current_player.deck)
         start_top_card:Card = self.play_deck[0]
@@ -477,7 +486,7 @@ class Game:
                 turn_data['Pulled_cards_names'] = '|'.join([repr(self.current_player.deck[-i]) for i in range(1, 6)])
 
             else:
-                raise Exception('Player played a card but len of his deck didnt change!')
+                raise ValueError("Player played a card but len of his deck didn't change!")
 
             if self.play_deck[0].functional:
                 turn_data['Card_function'] = self.play_deck[0].function[0]

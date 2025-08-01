@@ -1,6 +1,6 @@
-from makao_game import dictionaries as c_dict
-
 import os
+
+from makao_game import dictionaries as c_dict
 
 def get_data_path() -> str:
     # os.path.dirname takes out file name from given path
@@ -23,6 +23,6 @@ def colour_string(text: str, colour: str, bg_colour: str = '') -> str:
         else:
             colored_text += 'm'
     except KeyError:
-        raise ValueError(f'colour {colour} or {bg_colour} cannot be found')
+        raise KeyError(f'colour {colour} or {bg_colour} cannot be found')
 
     return colored_text + f'{text}{c_dict.ASCII_END}'

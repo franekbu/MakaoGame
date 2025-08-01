@@ -9,7 +9,7 @@ class Card:
         self.symbol:str = self.__what_colour(colour_series, 's')
         self.colour:str = self.__what_colour(colour_series, 'c')
         self.functional:bool = self.__is_functional()
-        self.function:list|None = self.__what_function()
+        self.function:list[str | int | None] = self.__what_function()
 
     def __str__(self):
         if self.colour in ['Diamonds', 'Hearts']:
@@ -26,14 +26,14 @@ class Card:
         return c_dict.NAMES[self.__number]
 
     @staticmethod
-    def __what_colour(colour_series:int, what:str) -> str | None:
+    def __what_colour(colour_series:int, what:str) -> str:
         """If what = c returns cards colour, if what = s returns cards symbol """
         if what == 'c':
             return c_dict.COLOURS[colour_series]['name']
         elif what == 's':
             return c_dict.COLOURS[colour_series]['symbol']
         else:
-            return None
+            raise ValueError
 
     def __is_functional(self) -> bool:
         """Returns whether card has a function or not"""
