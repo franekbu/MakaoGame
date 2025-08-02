@@ -85,7 +85,6 @@ class Player:
                 print(colour_string(text='Typed char must be an int!',
                                     colour='red'))
 
-
     def choose_card(self, cur_c:Card, demands:list[str | int | None]) -> list[Card]:
         """Gives player a choice which card/s he wants to play and returns list of them"""
         # TODO 3. Add possibility to pass even after saying play

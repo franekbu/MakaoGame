@@ -198,34 +198,6 @@ class Game:
                 return []
         return new_cards
 
-    def _handle_demands_colour(self) -> None:
-        if isinstance(self.current_player, BotPlayer):
-            self.demands = ['colour', self.current_player.choose_demands('colour')]
-        else:
-            print(f'Available colours names: {self.colours}')
-            demanded_color:str = input('What colour do you demand?: ').lower()
-            while demanded_color not in self.colours:
-                message: str = 'Wrong colour!\nColours you can use are: {self.colours}'
-                print(colour_string(message, 'red'))
-                print(colour_string('Do not use symbols!', 'red'))
-                demanded_color = input('So what colour do you demand?: ').lower()
-            self.demands = ['colour', demanded_color.capitalize()]
-
-        self.stack_demands = len(self.players)
-
-    def _handle_demands_number(self) -> None:
-        if isinstance(self.current_player, BotPlayer):
-            self.demands = ['number', self.current_player.choose_demands('number')]
-        else:
-            demanded_number: str = input('What number do you demand?: ')
-            while 4 > int(demanded_number) or int(demanded_number) > 10:
-                message: str = 'Wrong number!\nNumbers you can use demand are between 5 and 10'
-                print(colour_string(message, 'red'))
-                demanded_number = input('So what number do you demand?: ')
-            self.demands = ['number', demanded_number]
-
-        self.stack_demands = len(self.players)
-
     def _handle_demands(self, num_cards_played:int) -> None:
         """Checks what demands new card has set and changes games demands according to them\n
             2/3/kings = ['add'] stack_pull+=,\n
@@ -258,12 +230,15 @@ class Game:
 
             elif self.play_deck[0].function[0] == 'demand':
                 if self.play_deck[0].function[1] == 'number':
-                    self._handle_demands_number()
+                    self.demands = ['number', self.current_player.choose_number_demands()]
 
                 elif self.play_deck[0].function[1] == 'colour':
-                    self._handle_demands_colour()
+                    self.demands = ['colour', self.current_player.choose_colour_demands()]
+
                 else:
                     raise ValueError('you fucked sth up on demanding demands')
+
+                self.stack_demands = len(self.players)
             else:
                 raise ValueError('you fucked up updating functional demands')
 

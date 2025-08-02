@@ -32,7 +32,7 @@ FUNCTIONS:dict = {
 CSV_HEADERS:list[str] = ['Game_move','Player_name','Is_bot','Player_turn','Is_finished','Final_place','Is_frozen',
                          'Player_deck_size','Played_cards_count','Played_cards_names','Pulled_cards_count',
                          'Pulled_cards_names','Top_card_met','Is_card_functional','Card_function',
-                         'Demanded_num','Demanded_colour']
+                         'Demanded_num','Demanded_col']
 
 DATA_DIR_NAME:str = 'game_data'
 
