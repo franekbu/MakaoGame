@@ -3,6 +3,7 @@ import random
 
 from makao_game.cards import Card
 from makao_game.utils import colour_string
+from makao_game.dictionaries import COLOURS
 
 class Player:
     def __init__(self, player_name:str) -> None:
@@ -13,6 +14,15 @@ class Player:
         self.valid_cards:bool = False
         self.turn:int = 0
         self.played_card:bool = False
+
+    @staticmethod
+    def play_or_pass() -> str:
+        """Ask player if he wants to play in this turn or pass it, returns his answer"""
+        response:str = input('Do you want to play or pass? ').lower()
+        while response not in ['pass', 'play']:
+            print(colour_string('You can only write: pass, play', 'red'))
+            response = input('So what do you do? ').lower()
+        return response
 
     @staticmethod
     def checking_card(new_c:Card, cur_c:Card, demands:list[str|int|None]) -> bool:
@@ -43,7 +53,24 @@ class Player:
         self.valid_cards = False
         return None
 
-    def choosing_card(self, cur_c:Card, demands:list[str|int|None]) -> list[Card]:
+    def choose_colour_demands(self) -> str:
+        """Ask player what colour he wants to demand and returns it"""
+        available_colours: list[tuple[str, str]] = [
+            (COLOURS[col]['name'].lower(), COLOURS[col]['symbol']) for col in COLOURS
+        ]
+
+        print(f'Available colours names: {available_colours}')
+        demanded_color:str = input('What colour do you demand?: ').lower()
+
+        while demanded_color not in available_colours:
+            print(colour_string(text=f'Wrong colour!\nColours you can use are: {available_colours}',
+                                colour='red'))
+            print(colour_string('Do not use symbols!', 'red'))
+            demanded_color = input('So what colour do you demand?: ').lower()
+
+        return demanded_color
+
+    def choose_card(self, cur_c:Card, demands:list[str | int | None]) -> list[Card]:
         """Gives player a choice which card/s he wants to play and returns list of them"""
         # TODO 3. Add possibility to pass even after saying play
         def _cards_from_deck() -> list[int]:
@@ -111,18 +138,10 @@ class Player:
         else:
             return True
 
-    @staticmethod
-    def play_or_pass() -> str:
-        """Ask player if he wants to play in this turn or pass it, returns his answer"""
-        response:str = input('Do you want to play or pass? ').lower()
-        while response not in ['pass', 'play']:
-            print(colour_string('You can only write: pass, play', 'red'))
-            response = input('So what do you do? ').lower()
-        return response
 
 class BotPlayer(Player):
     """Creates object which inherits from Player class, makes all choices automative and random"""
-    def __init__(self, bot_name:str):
+    def __init__(self, bot_name:str) -> None:
         super().__init__(bot_name)
         self.available_deck:list[Card] = []
 
@@ -132,26 +151,6 @@ class BotPlayer(Player):
         response:list[str] = ['play', 'pass']
         return random.choices(response, weights=[19, 1], k=1)[0]
 
-    def say_makao(self) -> bool:
-        """If player needs to say makao, it returns it with 95% chance"""
-        options:list[bool] = [True, False]
-        saying = random.choices(options, weights=[20, 1], k=1)[0]
-        # sleep(3)
-        if len(self.deck) == 1:
-            if saying:
-                print('Makao')
-            else:
-                print('Should I say something?')
-            return saying
-        elif len(self.deck) == 0:
-            if saying:
-                print('After makao')
-            else:
-                print('Should I say something?')
-            return saying
-        else:
-            return True
-
     def __create_available_deck(self, cur_c:Card, demands:list[str|int|None]) -> None:
         """Creates a deck of cards that can be played by bot in that turn"""
         self.available_deck.clear()
@@ -159,34 +158,36 @@ class BotPlayer(Player):
             if self.checking_card(card, cur_c, demands):
                 self.available_deck.append(card)
 
-    def choosing_demands(self, what_demand:str) -> str:
-        """If bot played demanding card, returns what his demands are based on how many that cards he has in a deck"""
-        if what_demand == 'colour':
-            cards_colours:list[str] = [card.colour for card in self.deck]
-            most_col_name:str = 'Hearts'
-            most_col_num:int = 0
-            for colour in cards_colours:
-                if cards_colours.count(colour) > most_col_num:
-                    most_col_num = cards_colours.count(colour)
-                    most_col_name = colour
-            return most_col_name
-        else:
-            cards_nums:list[str] = []
-            for card in self.deck:
-                try:
-                    if 11 > int(card.name) > 4:
-                        cards_nums.append(card.name)
-                except ValueError:
-                    pass
-            most_num_name:str = '5'
-            most_num_num:int = 0
-            for num in cards_nums:
-                if cards_nums.count(num) > most_num_num:
-                    most_num_num = cards_nums.count(num)
-                    most_num_name = num
-            return most_num_name
+    def choose_colour_demands(self) -> str:
+        """If bot played demanding card, returns what colour cards he has most in his deck"""
+        cards_colours:list[str] = [card.colour for card in self.deck]
+        most_col_name:str = 'Hearts'
+        most_col_num:int = 0
+        for colour in cards_colours:
+            if cards_colours.count(colour) > most_col_num:
+                most_col_num = cards_colours.count(colour)
+                most_col_name = colour
+        return most_col_name
 
-    def choosing_card(self, cur_c:Card, demands:list[str|int|None]) -> list[Card]:
+    def choose_number_demands(self) -> str:
+        """If bot played demanding card, returns what non-functional number cards he has most in his deck"""
+
+        cards_nums:list[str] = []
+        for card in self.deck:
+            try:
+                if 11 > int(card.name) > 4:
+                    cards_nums.append(card.name)
+            except ValueError:
+                pass
+        most_num_name:str = '5'
+        most_num_num:int = 0
+        for num in cards_nums:
+            if cards_nums.count(num) > most_num_num:
+                most_num_num = cards_nums.count(num)
+                most_num_name = num
+        return most_num_name
+
+    def choose_card(self, cur_c:Card, demands:list[str | int | None]) -> list[Card]:
         """Returns list of cards that bot randomly chose based in demands and current card in game"""
         self.__create_available_deck(cur_c, demands)
         chosen_cards:list[Card] = []
@@ -212,3 +213,23 @@ class BotPlayer(Player):
         print(f'Playing {chosen_cards[0]}')
         # sleep(3)
         return chosen_cards
+
+    def say_makao(self) -> bool:
+        """If player needs to say makao, it returns it with 95% chance"""
+        options:list[bool] = [True, False]
+        saying = random.choices(options, weights=[20, 1], k=1)[0]
+        # sleep(3)
+        if len(self.deck) == 1:
+            if saying:
+                print('Makao')
+            else:
+                print('Should I say something?')
+            return saying
+        elif len(self.deck) == 0:
+            if saying:
+                print('After makao')
+            else:
+                print('Should I say something?')
+            return saying
+        else:
+            return True

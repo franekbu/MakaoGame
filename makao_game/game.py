@@ -9,7 +9,7 @@ from makao_game.utils import get_data_path, colour_string
 from makao_game.cards import Card
 
 class Game:
-    def __init__(self, **names:list[str]):
+    def __init__(self, **names:list[str]) -> None:
         """available kwargs: players, bots\n
         Creates class that handles all logic in a game
         """
@@ -91,8 +91,8 @@ class Game:
                     num_players = int(input('How many human players do you want to play?'))
                     num_bots = int(input('How many bots players do you want to play?'))
                     if num_players + num_bots < 2 or num_players + num_bots > c_dict.MAX_NUM_OF_PLAYERS:
-                        print(colour_string(text=f'Number of all players combined (humans and bots) must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!'
-                                            ,colour='red'))
+                        print(colour_string(text=f'Number of all players combined (humans and bots) must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!',
+                                            colour='red'))
                     else:
                         break
 
@@ -104,13 +104,14 @@ class Game:
                 try:
                     num_players = int(input('How many human players do you want to play?'))
                     if num_players < 2 or num_players > c_dict.MAX_NUM_OF_PLAYERS:
-                        print(colour_string(text=f'Number of all players must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!'
-                                            ,colour='red'))
+                        print(colour_string(text=f'Number of all players must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!',
+                                            colour='red'))
                     else:
                         break
 
                 except ValueError:
-                    print(colour_string('Invalid input!\nPlease input only numbers', 'red'))
+                    print(colour_string(text='Invalid input!\nPlease input only numbers',
+                                        colour='red'))
                     continue
 
         used_names:list[str] = []
@@ -121,7 +122,7 @@ class Game:
         for i in range(num_players):
             name = input(f'What is {i + 1}.player name?')
             while name.replace(" ", "") in used_names:
-                print(colour_string('Names cannot repeat!', 'red'))
+                print(colour_string(text='Names cannot repeat!', colour='red'))
                 name = input(f'What is {i + 1}.player name?')
             players.append(Player(player_name=name))
             used_names.append(name)
@@ -129,7 +130,7 @@ class Game:
         for i in range(num_bots):
             name = input(f'What is {i + 1}.bot name?')
             while name.replace(" ", "") in used_names:
-                print(colour_string('Names cannot repeat!', 'red'))
+                print(colour_string(text='Names cannot repeat!', colour='red'))
                 name = input(f'What is {i + 1}.bot name?')
             bots.append(BotPlayer(bot_name=name))
             used_names.append(name)
@@ -192,14 +193,14 @@ class Game:
                 new_cards.append(self.main_deck[0])
                 self.main_deck.pop(0)
             except IndexError:
-                message: str = 'You ran out of cards to pull\nPlay your damn cards!'
-                print(colour_string(message, 'red'))
+                print(colour_string(text='You ran out of cards to pull\nPlay your damn cards!',
+                                    colour='red'))
                 return []
         return new_cards
 
     def _handle_demands_colour(self) -> None:
         if isinstance(self.current_player, BotPlayer):
-            self.demands = ['colour', self.current_player.choosing_demands('colour')]
+            self.demands = ['colour', self.current_player.choose_demands('colour')]
         else:
             print(f'Available colours names: {self.colours}')
             demanded_color:str = input('What colour do you demand?: ').lower()
@@ -214,7 +215,7 @@ class Game:
 
     def _handle_demands_number(self) -> None:
         if isinstance(self.current_player, BotPlayer):
-            self.demands = ['number', self.current_player.choosing_demands('number')]
+            self.demands = ['number', self.current_player.choose_demands('number')]
         else:
             demanded_number: str = input('What number do you demand?: ')
             while 4 > int(demanded_number) or int(demanded_number) > 10:
@@ -293,7 +294,7 @@ class Game:
     def _handle_player_move(self, player: Player | BotPlayer) -> None:
         """PLayer chooses and plays the cards and then if needed says makao"""
         # maybe call it playing card
-        cards_to_play:list[Card] = player.choosing_card(self.play_deck[0], self.demands)
+        cards_to_play:list[Card] = player.choose_card(self.play_deck[0], self.demands)
         for card in cards_to_play:
             self.play_deck.insert(0, card)
             player.deck.remove(card)
@@ -332,8 +333,7 @@ class Game:
             if self.stack_demands == len(self.players):
                 self.stack_demands -= 1
 
-        message: str = 'Congrats!!! You finished the game!'
-        print(colour_string(message, 'yellow'))
+        print(colour_string(text='Congrats!!! You finished the game!', colour='yellow'))
         self.finishers.append(player)
         self.players.remove(player)
 
