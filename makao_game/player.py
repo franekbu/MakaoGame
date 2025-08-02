@@ -70,6 +70,22 @@ class Player:
 
         return demanded_color
 
+    def choose_number_demands(self) -> str:
+        """Ask player what number he wants to demand and returns it"""
+        demanded_number: str
+        while True:
+            try:
+                demanded_number = input('What number do you demand?: ')
+                while 4 > int(demanded_number) or int(demanded_number) > 10:
+                    print(colour_string(text='Wrong number!\nNumbers you can demand are between 5 and 10',
+                                        colour='red'))
+                    demanded_number = input('So what number do you demand?: ')
+                return demanded_number
+            except ValueError:
+                print(colour_string(text='Typed char must be an int!',
+                                    colour='red'))
+
+
     def choose_card(self, cur_c:Card, demands:list[str | int | None]) -> list[Card]:
         """Gives player a choice which card/s he wants to play and returns list of them"""
         # TODO 3. Add possibility to pass even after saying play
@@ -233,3 +249,6 @@ class BotPlayer(Player):
             return saying
         else:
             return True
+
+
+# if __name__ == '__main__':
