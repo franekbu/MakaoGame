@@ -14,19 +14,32 @@ COLOURS:dict = {
     3: {'name': 'Hearts', 'symbol': '♥'},
     4: {'name': 'Spades', 'symbol': '♠'}
 }
-# pik i kier musza byc 3 i 4, niewazna kolejnosc
+# pik i kier muszą być 3 i 4, nieważna kolejność
 
-FUNCTIONS:dict = {
-    2: ['add', 2],
-    3: ['add', 3],
-    4: ['pause', 1],
-    11: ['demand', 'number'],
-    12: ['shield', 0],
+FUNCTIONS_TYPES_NAMES: dict[str, str] = {
+    'PULL': 'add',
+    'FREEZE': 'pause',
+    'DEMAND': 'demand',
+    'ABOLISH': 'shield',
+    'REVERSE': 'subtract',
+}
+
+DEMAND_OPTIONS_NAMES: dict[str, str] = {
+    'JACK': 'number',
+    'ACE': 'colour'
+}
+
+FUNCTIONS:dict[int, list[str | int] | dict[str, list[str | int]]] = {
+    2: [FUNCTIONS_TYPES_NAMES['PULL'], 2],
+    3: [FUNCTIONS_TYPES_NAMES['PULL'], 3],
+    4: [FUNCTIONS_TYPES_NAMES['FREEZE'], 1],
+    11: [FUNCTIONS_TYPES_NAMES['DEMAND'], DEMAND_OPTIONS_NAMES['JACK']],
+    12: [FUNCTIONS_TYPES_NAMES['ABOLISH'], 0],
     13: {
-        'Hearts': ['add', 5],
-        'Spades': ['subtract', 5]
+        'Hearts': [FUNCTIONS_TYPES_NAMES['PULL'], 5],
+        'Spades': [FUNCTIONS_TYPES_NAMES['REVERSE'], 5]
     },
-    14: ['demand', 'colour']
+    14: [FUNCTIONS_TYPES_NAMES['DEMAND'], DEMAND_OPTIONS_NAMES['ACE']]
 }
 
 CSV_HEADERS:list[str] = ['Game_move','Player_name','Is_bot','Player_turn','Is_finished','Final_place','Is_frozen',
