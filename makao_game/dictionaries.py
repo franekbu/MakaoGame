@@ -17,11 +17,11 @@ COLOURS:dict = {
 # pik i kier muszą być 3 i 4, nieważna kolejność
 
 FUNCTIONS_TYPES_NAMES: dict[str, str] = {
-    'PULL': 'add',
-    'FREEZE': 'pause',
+    'PULL': 'draw cards',
+    'FREEZE': "can't play for a turn",
     'DEMAND': 'demand',
-    'ABOLISH': 'shield',
-    'REVERSE': 'subtract',
+    'ABOLISH': 'abolish previous actions',
+    'REVERSE': 'reverse order of turns and draw cards',
 }
 
 DEMAND_OPTIONS_NAMES: dict[str, str] = {
@@ -29,17 +29,17 @@ DEMAND_OPTIONS_NAMES: dict[str, str] = {
     'ACE': 'colour'
 }
 
-FUNCTIONS:dict[int, list[str | int] | dict[str, list[str | int]]] = {
-    2: [FUNCTIONS_TYPES_NAMES['PULL'], 2],
-    3: [FUNCTIONS_TYPES_NAMES['PULL'], 3],
-    4: [FUNCTIONS_TYPES_NAMES['FREEZE'], 1],
-    11: [FUNCTIONS_TYPES_NAMES['DEMAND'], DEMAND_OPTIONS_NAMES['JACK']],
-    12: [FUNCTIONS_TYPES_NAMES['ABOLISH'], 0],
+FUNCTIONS: dict[int, tuple[str, str | int] | dict[str, tuple[str, str | int]]] = {
+    2: (FUNCTIONS_TYPES_NAMES['PULL'], 2),
+    3: (FUNCTIONS_TYPES_NAMES['PULL'], 3),
+    4: (FUNCTIONS_TYPES_NAMES['FREEZE'], 1),
+    11: (FUNCTIONS_TYPES_NAMES['DEMAND'], DEMAND_OPTIONS_NAMES['JACK']),
+    12: (FUNCTIONS_TYPES_NAMES['ABOLISH'], 0),
     13: {
-        'Hearts': [FUNCTIONS_TYPES_NAMES['PULL'], 5],
-        'Spades': [FUNCTIONS_TYPES_NAMES['REVERSE'], 5]
+        'Hearts': (FUNCTIONS_TYPES_NAMES['PULL'], 5),
+        'Spades': (FUNCTIONS_TYPES_NAMES['REVERSE'], 5),
     },
-    14: [FUNCTIONS_TYPES_NAMES['DEMAND'], DEMAND_OPTIONS_NAMES['ACE']]
+    14: (FUNCTIONS_TYPES_NAMES['DEMAND'], DEMAND_OPTIONS_NAMES['ACE']),
 }
 
 CSV_HEADERS:list[str] = ['Game_move','Player_name','Is_bot','Player_turn','Is_finished','Final_place','Is_frozen',
