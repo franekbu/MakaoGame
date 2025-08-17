@@ -59,13 +59,14 @@ After running the game, it can ask some questions about e.g. how many human or b
 ```
 .
 ├── main.py                     # Main file to run a game
-└── makao_game/                    # Directory containing class definitions
+└── makao_game/                 # Directory containing class definitions
     ├── __init__.py             # Python package initialization
     ├── game.py                 # Core game logic (mechanics, turns, data management)
     ├── player.py               # Player definition (human and bot)
     ├── cards.py                # Card definition
     ├── dictionaries.py         # Dictionaries with card data, functions and .csv headers
-    └── utils.py                # Functions that can be used among many makao_game
+    ├── utils.py                # Functions that can be used among many makao_game
+    └── cards_actions           # Cards actions logic (deamnds, pulls, etc.)
 └── game_data/                  # Directory for game logs (automatically generated)
     └── [timestamp].csv         # Example CSV files with data from each game turn
 ```

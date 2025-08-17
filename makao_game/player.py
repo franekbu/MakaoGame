@@ -3,7 +3,7 @@ import random
 
 from makao_game.cards import Card
 from makao_game.utils import colour_string
-from makao_game.dictionaries import COLOURS
+from makao_game.dictionaries import COLOURS, DEMAND_OPTIONS_NAMES
 from makao_game.cards_actions import CardsActions
 
 class Player:
@@ -34,24 +34,24 @@ class Player:
         self.valid_cards = False
         return None
 
-    def choose_colour_demands(self) -> str:
+    def _choose_colour_demands(self) -> str:
         """Ask player what colour he wants to demand and returns it"""
         available_colours: list[tuple[str, str]] = [
-            (COLOURS[col]['name'].lower(), COLOURS[col]['symbol']) for col in COLOURS
+            (COLOURS[col]['name'].capitalize(), COLOURS[col]['symbol']) for col in COLOURS
         ]
 
         print(f'Available colours names: {available_colours}')
-        demanded_color: str = input('What colour do you demand?: ').lower()
+        demanded_color: str = input('What colour do you demand?: ').capitalize()
 
         while demanded_color not in available_colours:
             print(colour_string(text=f'Wrong colour!\nColours you can use are: {available_colours}',
                                 colour='red'))
             print(colour_string('Do not use symbols!', 'red'))
-            demanded_color = input('So what colour do you demand?: ').lower()
+            demanded_color = input('So what colour do you demand?: ').capitalize()
 
         return demanded_color
 
-    def choose_number_demands(self) -> str:
+    def _choose_number_demands(self) -> str:
         """Ask player what number he wants to demand and returns it"""
         demanded_number: str
         while True:
@@ -66,7 +66,16 @@ class Player:
                 print(colour_string(text='Typed char must be an int!',
                                     colour='red'))
 
-    def choose_card(self, cur_card:Card, game_actions: CardsActions) -> list[Card]:
+    def handle_demanding(self, demand_type: str) -> str:
+        """Accordingly to what demand is needed, runs choose_number_demands or choose_colour_demands"""
+        if demand_type == DEMAND_OPTIONS_NAMES['JACK']:
+            return  self._choose_number_demands()
+        elif demand_type == DEMAND_OPTIONS_NAMES['ACE']:
+            return self._choose_colour_demands()
+        else:
+            raise ValueError('wrong demand type, passed is nor Jack or Ace')
+
+    def choose_card(self, cur_card: Card, game_actions: CardsActions) -> list[Card]:
         """Gives player a choice which card/s he wants to play and returns list of them"""
         # TODO 3. Add possibility to pass even after saying play
         def _cards_from_deck() -> list[int]:
@@ -154,18 +163,18 @@ class BotPlayer(Player):
             if card.can_be_played(cur_card,  game_actions):
                 self._available_deck.append(card)
 
-    def choose_colour_demands(self) -> str:
+    def _choose_colour_demands(self) -> str:
         """If bot played demanding card, returns what colour cards he has most in his deck"""
         cards_colours: list[str] = [card.colour for card in self.deck]
-        most_col_name: str = 'Hearts'
+        most_col_name: str = COLOURS[3]['name']
         most_col_num: int = 0
         for colour in cards_colours:
             if cards_colours.count(colour) > most_col_num:
                 most_col_num = cards_colours.count(colour)
                 most_col_name = colour
-        return most_col_name
+        return most_col_name.capitalize()
 
-    def choose_number_demands(self) -> str:
+    def _choose_number_demands(self) -> str:
         """If bot played demanding card, returns what non-functional number cards he has most in his deck"""
 
         cards_nums: list[str] = []
@@ -183,7 +192,7 @@ class BotPlayer(Player):
                 most_num_name = num
         return most_num_name
 
-    def choose_card(self, cur_card:Card, game_actions: CardsActions) -> list[Card]:
+    def choose_card(self, cur_card: Card, game_actions: CardsActions) -> list[Card]:
         """Returns list of cards that bot randomly chose based in demands and current card in game"""
         self._create_available_deck(cur_card, game_actions)
         chosen_cards: list[Card] = []

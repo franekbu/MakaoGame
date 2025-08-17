@@ -1,14 +1,14 @@
-NUMERIC_CARDS:dict = {num:f'{num}' for num in range(2,11)}
-HIGH_CARDS:dict = {
+NUMERIC_CARDS: dict[int, str] = {num:f'{num}' for num in range(2,11)}
+HIGH_CARDS: dict[int, str] = {
     11: 'Jack',
     12: 'Queen',
     13: 'King',
     14: 'Ace'}
 
-NAMES:dict = NUMERIC_CARDS | HIGH_CARDS
+NAMES: dict[int, str] = NUMERIC_CARDS | HIGH_CARDS
 # | merges two dictionaries
 
-COLOURS:dict = {
+COLOURS: dict[int, dict[str, str]] = {
     1: {'name': 'Clubs', 'symbol': '♣'},
     2: {'name': 'Diamonds', 'symbol': '♦'},
     3: {'name': 'Hearts', 'symbol': '♥'},
@@ -18,7 +18,7 @@ COLOURS:dict = {
 
 FUNCTIONS_TYPES_NAMES: dict[str, str] = {
     'PULL': 'pull',
-    'FREEZE': "freeze",
+    'FREEZE': 'freeze',
     'DEMAND': 'demand',
     'ABOLISH': 'abolish',
     'REVERSE': 'reverse',
@@ -50,14 +50,14 @@ FUNCTIONS: dict[int, tuple[str, str | int] | dict[str, tuple[str, str | int]]] =
     14: (FUNCTIONS_TYPES_NAMES['DEMAND'], DEMAND_OPTIONS_NAMES['ACE']),
 }
 
-CSV_HEADERS:list[str] = ['Game_move','Player_name','Is_bot','Player_turn','Is_finished','Final_place','Is_frozen',
+CSV_HEADERS: list[str] = ['Game_move','Player_name','Is_bot','Player_turn','Is_finished','Final_place','Is_frozen',
                          'Player_deck_size','Played_cards_count','Played_cards_names','Pulled_cards_count',
                          'Pulled_cards_names','Top_card_met','Is_card_functional','Card_function',
                          'Demanded_num','Demanded_col']
 
-DATA_DIR_NAME:str = 'game_data'
+DATA_DIR_NAME: str = 'game_data'
 
-MAX_NUM_OF_PLAYERS:int = 6
+MAX_NUM_OF_PLAYERS: int = 6
 
 ASCII_START: str = '\033['
 ASCII_END: str = '\033[0m'

@@ -8,25 +8,26 @@ PULL: str = c_dict.FUNCTIONS_TYPES_NAMES['PULL']
 FREEZE: str = c_dict.FUNCTIONS_TYPES_NAMES['FREEZE']
 DEMAND: str = c_dict.FUNCTIONS_TYPES_NAMES['DEMAND']
 ABOLISH: str = c_dict.FUNCTIONS_TYPES_NAMES['ABOLISH']
-REVERSE:str = c_dict.FUNCTIONS_TYPES_NAMES['REVERSE']
+REVERSE: str = c_dict.FUNCTIONS_TYPES_NAMES['REVERSE']
 
 class Card:
-    def __init__(self, num:int, colour_series:int) -> None:
+    def __init__(self, num: int, colour_series: int) -> None:
         """Creates a card object that represent a card from a deck in a game """
-        self._number:int = num
-        self.name:str = self._what_name()
-        self.symbol:str = self._what_colour(colour_series, 's')
-        self.colour:str = self._what_colour(colour_series, 'c')
+        self._number: int = num
+        self.name: str = self._what_name()
+        self.symbol: str = self._what_colour(colour_series, 's')
+        self.colour: str = self._what_colour(colour_series, 'c')
         self.function: tuple[str, str | int] | None = self._what_function()
 
-    def __str__(self):
+    def __str__(self) -> str:
+        symbol: str
         if self.colour in ['Diamonds', 'Hearts']:
             symbol = colour_string(self.symbol, 'red')
         else:
             symbol = colour_string(self.symbol, 'black', 'bg')
         return f'{self.name}{symbol}'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.name}{self.symbol}'
 
     def _what_name(self) -> str:
@@ -34,10 +35,10 @@ class Card:
         return c_dict.NAMES[self._number]
 
     @staticmethod
-    def _what_colour(colour_series:int, what:str) -> str:
+    def _what_colour(colour_series: int, what: str) -> str:
         """If what = c returns cards colour, if what = s returns cards symbol """
         if what == 'c':
-            return c_dict.COLOURS[colour_series]['name']
+            return c_dict.COLOURS[colour_series]['name'].capitalize()
         elif what == 's':
             return c_dict.COLOURS[colour_series]['symbol']
         else:
@@ -60,8 +61,6 @@ class Card:
                 return function[self.colour]
             elif isinstance(function, tuple):
                 return function
-            else:
-                raise ValueError('Not supported type in FUNCTIONS dict')
         else:
             return None
 

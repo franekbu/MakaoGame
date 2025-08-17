@@ -9,10 +9,7 @@ class CardsActions:
         self.demanded_value: str | None = None   # set only when demanded number or colour
         self.demands_duration: int = 0
         self.reversed_order: bool = False
-
-    def is_active(self) -> bool:
-        """Returns True if actions set"""
-        return self.action_type is not None
+        self.update_player_inputs: bool = False
 
     def reset_actions(self) -> None:
         """Sets all attributes APART FROM REVERSED_ORDER to initial values"""
@@ -22,6 +19,7 @@ class CardsActions:
         self.demanded_type = None
         self.demanded_value = None
         self.demands_duration = 0
+        self.update_player_inputs = False
 
     def _handle_non_functional_card(self, multi_cards_played: bool) -> None:
         """Reduces demands_duration or reset all actions"""
@@ -41,10 +39,21 @@ class CardsActions:
         self.action_type = FUNCTIONS_TYPES_NAMES['FREEZE']
         self.freeze_stack += multiplier
 
-    def _handle_demand_action(self) -> None:
-        pass
+    def _handle_demand_action(self, demanded_type: str, num_players: int) -> None:
+        self.action_type = FUNCTIONS_TYPES_NAMES['DEMAND']
+        self.demanded_type = demanded_type
+        self.demanded_value = None
+        self.demands_duration = num_players
+        self.update_player_inputs = True
 
-    def apply_card_effects(self, card_played_function: tuple[str, str | int] | None, num_cards_played: int) -> bool:
+    def update_actions_with_player_inputs(self, user_input: str) -> None:
+        self.demanded_value = user_input
+        self.update_player_inputs = False
+
+    def apply_card_effects(self,
+                           card_played_function: tuple[str, str | int] | None,
+                           num_cards_played: int,
+                           num_players: int) -> None:
         """
         Changes card actions accordingly to what card was played and how many of them,
         returns True if player action is needed -> Ace or Jack played,
@@ -54,7 +63,7 @@ class CardsActions:
 
         if card_played_function is None:
             self._handle_non_functional_card(multiple_cards_played)
-            return False
+            return None
 
 
         cards_function_name: str = card_played_function[0]
@@ -68,7 +77,8 @@ class CardsActions:
             self._handle_freeze_action(num_cards_played)
 
         elif cards_function_name == FUNCTIONS_TYPES_NAMES['DEMAND']:
-            self._handle_demand_action()
+            assert isinstance(function_value, str)
+            self._handle_demand_action(function_value, num_players)
 
         elif cards_function_name == FUNCTIONS_TYPES_NAMES['ABOLISH']:
             self.reset_actions()
@@ -79,6 +89,4 @@ class CardsActions:
             self._handle_pull_action(function_value, num_cards_played)
         else:
             raise ValueError
-
-
-        return False
+        return None

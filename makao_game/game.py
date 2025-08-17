@@ -19,7 +19,6 @@ class Game:
         self.main_deck: list[Card] = self._create_deck()
         self._dealing_cards()
         self.play_deck: list[Card] = [self._start_card()] # deck where you put cards you play
-        self.colours = self._ingame_colours()
         self.actions: CardsActions = CardsActions()
         self.current_player: Player | BotPlayer = self.players[0]
         self.turn: int = 0
@@ -29,15 +28,6 @@ class Game:
     # maybe upgrade it a little
     def __str__(self):
         return f'Game players: {[player.name for player in self.players]}'
-
-    @staticmethod
-    def _ingame_colours() -> list[str]:
-        """Returns list of names of colours that are used in a game"""
-        colours: list[str] = []
-        for col in c_dict.COLOURS:
-            colours.append(c_dict.COLOURS[col]['name'].lower())
-            colours.append(c_dict.COLOURS[col]['symbol'])
-        return colours
 
     @staticmethod
     def _create_deck() -> list[Card]:
@@ -195,20 +185,6 @@ class Game:
                 return []
         return new_cards
 
-    def _handle_player_move(self, player: Player | BotPlayer) -> None:
-        """PLayer chooses and plays the cards and then if needed says makao"""
-        # maybe call it playing card
-        cards_to_play: list[Card] = player.choose_card(self.play_deck[0], self.actions)
-        for card in cards_to_play:
-            self.play_deck.insert(0, card)
-            player.deck.remove(card)
-
-        # TODO add flag with demands settings
-        self.actions.apply_card_effects(self.play_deck[0].function, len(cards_to_play))
-
-        if not player.say_makao():
-            player.deck.extend(self._pulled_cards(5))
-
     def _update_main_deck(self) -> None:
         """Takes cards from overstacking play_deck and returns them to main_deck so players can pull them from it"""
         if len(self.main_deck) < 21:
@@ -216,6 +192,18 @@ class Game:
                 self.main_deck.append(self.play_deck[-1])
                 self.play_deck.pop(-1)
         self._shuffle_deck(self.main_deck)
+
+    def _display_turn_start_info(self) -> None:
+        """Display info at the beginning of player's turn such as:\n
+        - what card is on the table\n
+        - what are demands\n
+        - what is his deck
+        """
+        player: Player | BotPlayer = self.current_player
+        print(f'Card on a table: {self.play_deck[0]}')
+        if self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['DEMAND']:
+            print(f'Your are demanded to play: {self.actions.demanded_value}')
+        print(f'{player.name} this is your deck:\n{self._deck_to_print(player.deck)}')
 
     def _next_player(self) -> None:
         """Sets new current player for a next round"""
@@ -234,9 +222,9 @@ class Game:
     def _handle_finisher(self, player: Player | BotPlayer):
         """Removes player from active players list adds him to finishers and checks if demands len should be shortened"""
         # checking if he just played demands card
-        if self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['DEMAND']:
-            if self.actions.demands_duration == len(self.players):
-                self.actions.demands_duration -= 1
+        if (self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['DEMAND'] and
+                self.actions.demands_duration == len(self.players)):
+            self.actions.demands_duration -= 1
 
         print(colour_string(text='Congrats!!! You finished the game!', colour='yellow'))
         self.finishers.append(player)
@@ -261,7 +249,6 @@ class Game:
                 self.actions.reset_actions()
 
         elif self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['PULL']:
-        # elif self.actions.pull_stack > 0:
             player.deck.extend(self._pulled_cards(self.actions.pull_stack))
             print(f'{player.name} did not have valid cards, he pulled {self.actions.pull_stack} new cards')
             self.actions.reset_actions()
@@ -274,17 +261,23 @@ class Game:
             else:
                 print(f'{player.name} did not have valid cards, he pulled new card')
 
-    def _display_turn_start_info(self) -> None:
-        """Display info at the beginning of player's turn such as:\n
-        - what card is on the table\n
-        - what are demands\n
-        - what is his deck
-        """
+    def _handle_player_move(self) -> None:
+        """PLayer chooses and plays the cards and then if needed says makao"""
         player: Player | BotPlayer = self.current_player
-        print(f'Card on a table: {self.play_deck[0]}')
-        if self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['DEMAND']:
-            print(f'Your are demanded to play: {self.actions.demanded_value}')
-        print(f'{player.name} this is your deck:\n{self._deck_to_print(player.deck)}')
+
+        cards_to_play: list[Card] = player.choose_card(self.play_deck[0], self.actions)
+        for card in cards_to_play:
+            self.play_deck.insert(0, card)
+            player.deck.remove(card)
+
+        self.actions.apply_card_effects(self.play_deck[0].function, len(cards_to_play), len(self.players))
+        if self.actions.update_player_inputs:
+            assert isinstance(self.actions.demanded_type, str)
+            demand: str = player.handle_demanding(self.actions.demanded_type)
+            self.actions.update_actions_with_player_inputs(demand)
+
+        if not player.say_makao():
+            player.deck.extend(self._pulled_cards(5))
 
     def _handle_frozen_player(self) -> None:
         """Handle cases when player was frozen at the start of his turn"""
@@ -320,7 +313,7 @@ class Game:
                 pass_or_play = player.play_or_pass()
 
                 if pass_or_play == 'play':
-                    self._handle_player_move(player)
+                    self._handle_player_move()
                     player.played_card = True
 
                 elif pass_or_play == 'pass' and isinstance(player, BotPlayer):
@@ -350,7 +343,7 @@ class Game:
 
     def _collect_data(self, frozen_before: bool, deck_size_before: int, top_card_before: Card) -> None:
         """Takes few datas from the beginning of the turn as arguments, then collects actual data and saves it as dict"""
-        turn_data:dict[str, str | int | bool | None] = {
+        turn_data: dict[str, str | int | bool | None] = {
             'Game_move': self.turn,
             'Player_name': self.current_player.name,
             'Is_bot': isinstance(self.current_player, BotPlayer),
