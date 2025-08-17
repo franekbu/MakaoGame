@@ -18,6 +18,7 @@ class CardsActions:
     def reset_actions(self) -> None:
         """Sets all attributes APART FROM REVERSED_ORDER to initial values"""
         self.action_type = None
+        self.demanded_type = None
         self.demanded_value = None
         self.pull_stack = 0
         self.freeze_stack = 0
