@@ -1,13 +1,12 @@
 from makao_game.dictionaries import FUNCTIONS_TYPES_NAMES, DEMAND_OPTIONS_NAMES
-from makao_game.cards import Card
 
 class CardsActions:
     def __init__(self) -> None:
         self.action_type: str | None = None
-        self.demanded_type: str | None = None
-        self.demanded_value: str | None = None   # set only when demanded number or colour
         self.pull_stack: int = 0
         self.freeze_stack: int = 0
+        self.demanded_type: str | None = None
+        self.demanded_value: str | None = None   # set only when demanded number or colour
         self.demands_duration: int = 0
         self.reversed_order: bool = False
 
@@ -18,10 +17,10 @@ class CardsActions:
     def reset_actions(self) -> None:
         """Sets all attributes APART FROM REVERSED_ORDER to initial values"""
         self.action_type = None
-        self.demanded_type = None
-        self.demanded_value = None
         self.pull_stack = 0
         self.freeze_stack = 0
+        self.demanded_type = None
+        self.demanded_value = None
         self.demands_duration = 0
 
     def _handle_non_functional_card(self, multi_cards_played: bool) -> None:
@@ -45,7 +44,7 @@ class CardsActions:
     def _handle_demand_action(self) -> None:
         pass
 
-    def apply_card_effects(self, card_played: Card, num_cards_played: int) -> bool:
+    def apply_card_effects(self, card_played_function: tuple[str, str | int] | None, num_cards_played: int) -> bool:
         """
         Changes card actions accordingly to what card was played and how many of them,
         returns True if player action is needed -> Ace or Jack played,
@@ -53,13 +52,13 @@ class CardsActions:
         """
         multiple_cards_played: bool = num_cards_played > 1
 
-        if card_played.function is None:
+        if card_played_function is None:
             self._handle_non_functional_card(multiple_cards_played)
             return False
 
 
-        cards_function_name: str = card_played.function[0]
-        function_value: int | str = card_played.function[1]
+        cards_function_name: str = card_played_function[0]
+        function_value: int | str = card_played_function[1]
 
         if cards_function_name == FUNCTIONS_TYPES_NAMES['PULL']:
             assert isinstance(function_value, int)

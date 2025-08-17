@@ -17,6 +17,14 @@ COLOURS:dict = {
 # pik i kier muszą być 3 i 4, nieważna kolejność
 
 FUNCTIONS_TYPES_NAMES: dict[str, str] = {
+    'PULL': 'pull',
+    'FREEZE': "freeze",
+    'DEMAND': 'demand',
+    'ABOLISH': 'abolish',
+    'REVERSE': 'reverse',
+}
+
+FUNCTIONS_DESCRIPTIONS: dict[str, str] = {
     'PULL': 'draw cards',
     'FREEZE': "can't play for a turn",
     'DEMAND': 'demand',
