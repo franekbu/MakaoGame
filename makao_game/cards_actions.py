@@ -1,6 +1,7 @@
 from makao_game.dictionaries import FUNCTIONS_TYPES_NAMES, DEMAND_OPTIONS_NAMES
 
 class CardsActions:
+    """Creates class responsible for storing and managing current actions in game dictated by played cards functions"""
     def __init__(self) -> None:
         self.action_type: str | None = None
         self.pull_stack: int = 0
@@ -47,6 +48,10 @@ class CardsActions:
         self.update_player_inputs = True
 
     def update_actions_with_player_inputs(self, user_input: str) -> None:
+        """Updates demanded_value to provided user input, sets back to update_player_inputs
+
+            Should be used only if update_player_inputs is set to True
+        """
         self.demanded_value = user_input
         self.update_player_inputs = False
 
@@ -56,8 +61,7 @@ class CardsActions:
                            num_players: int) -> None:
         """
         Changes card actions accordingly to what card was played and how many of them,
-        returns True if player action is needed -> Ace or Jack played,
-        otherwise returns False
+        if card with demand action played, sets update_player_inputs to True
         """
         multiple_cards_played: bool = num_cards_played > 1
 
@@ -88,5 +92,5 @@ class CardsActions:
             assert isinstance(function_value, int)
             self._handle_pull_action(function_value, num_cards_played)
         else:
-            raise ValueError
+            raise ValueError('Card function is not None, and its name is not recognised')
         return None
