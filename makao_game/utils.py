@@ -26,12 +26,3 @@ def colour_string(text: str, colour: str, bg_colour: str = '') -> str:
         raise KeyError(f'colour {colour} or {bg_colour} cannot be found')
 
     return colored_text + f'{text}{c_dict.ASCII_END}'
-
-def get_user_input(message: str = '') -> str:
-    """Takes user's input and returns it"""
-    user_input: str = input(message)
-    return user_input
-
-def display_message(message: str) -> None:
-    """Displays message to user"""
-    print(message)
