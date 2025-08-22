@@ -8,10 +8,10 @@ from makao_game import dictionaries as c_dict
 from makao_game.utils import get_data_path, colour_string
 from makao_game.cards import Card
 from makao_game.cards_actions import CardsActions
-from makao_game.io_handler import IOHandler, ConsoleIOHandler
+from makao_game.io_handler import IOHandler
 
 class Game:
-    def __init__(self, **names: list[str]) -> None:
+    def __init__(self, io_handler: IOHandler, **names: list[str]) -> None:
         """
         Available kwargs: players, bots\n
         Creates class that handles all logic in a game
@@ -23,7 +23,7 @@ class Game:
         self.play_deck: list[Card] = [self._start_card()] # deck where you put cards you play
         self.actions: CardsActions = CardsActions()
         self.current_player: Player | BotPlayer = self.players[0]
-        self.io_handler: IOHandler = ConsoleIOHandler()
+        self.io_handler: IOHandler = io_handler
         self.turn: int = 0
         self.game_data: list[dict[str, str | int | bool | None]] = []
         self.data_dir_path: str = get_data_path()
