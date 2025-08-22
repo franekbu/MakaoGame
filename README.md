@@ -66,6 +66,7 @@ After running the game, it can ask some questions about e.g. how many human or b
     ├── cards.py                # Card definition
     ├── dictionaries.py         # Dictionaries with card data, functions and .csv headers
     ├── utils.py                # Functions that can be used among many makao_game
+    ├── io_handler.py           # Class to manage interactions with users
     └── cards_actions           # Cards actions logic (deamnds, pulls, etc.)
 └── game_data/                  # Directory for game logs (automatically generated)
     └── [timestamp].csv         # Example CSV files with data from each game turn
