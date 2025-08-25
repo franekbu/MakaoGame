@@ -67,8 +67,11 @@ class Card:
     def can_be_played(self, old_card: Card, game_actions: CardsActions) -> bool:
         """Returns True if card can be played on old card, with current game actions"""
 
-        if isinstance(self.function, tuple) and isinstance(old_card.function, tuple):
-            if self.function[0] == ABOLISH or old_card.function[0] == ABOLISH:
+        if isinstance(self.function, tuple):
+            if self.function[0] == ABOLISH:
+                return True
+        if isinstance(old_card.function, tuple):
+            if old_card.function[0] == ABOLISH:
                 return True
 
         action_type: str | None = game_actions.action_type
