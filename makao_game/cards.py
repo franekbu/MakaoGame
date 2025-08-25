@@ -11,23 +11,34 @@ ABOLISH: str = c_dict.FUNCTIONS_TYPES_NAMES['ABOLISH']
 REVERSE: str = c_dict.FUNCTIONS_TYPES_NAMES['REVERSE']
 
 class Card:
-    def __init__(self, num: int, colour_series: int) -> None:
+    def __init__(self, num: int, colour_series: int, allow_ascii: bool) -> None:
         """Creates a card object that represent a card from a deck in a game """
         self._number: int = num
         self.name: str = self._what_name()
         self.symbol: str = self._what_colour(colour_series, 's')
         self.colour: str = self._what_colour(colour_series, 'c')
         self.function: tuple[str, str | int] | None = self._what_function()
+        self._ascii: bool = allow_ascii
 
     def __str__(self) -> str:
+        """Cards name and symbol\n
+        If at creating colouring_card set to True:
+        Cards symbols have added colours by attached ASCII
+        """
         symbol: str
-        if self.colour in ['Diamonds', 'Hearts']:
-            symbol = colour_string(self.symbol, 'red')
+        if self._ascii:
+            if self.colour in ['Diamonds', 'Hearts']:
+                symbol = colour_string(self.symbol, 'red')
+            else:
+                symbol = colour_string(self.symbol, 'black', 'bg')
         else:
-            symbol = colour_string(self.symbol, 'black', 'bg')
+            symbol = self.symbol
         return f'{self.name}{symbol}'
 
     def __repr__(self) -> str:
+        """Cards name and symbol\n
+        Without any attachments
+        """
         return f'{self.name}{self.symbol}'
 
     def _what_name(self) -> str:
@@ -77,19 +88,24 @@ class Card:
         action_type: str | None = game_actions.action_type
         if action_type is None:
             return self.colour == old_card.colour or self.name == old_card.name
+
         elif action_type == PULL:
             if isinstance(self.function, tuple):
                 return (self.function[0] == PULL or self.function[0] == REVERSE) and \
                 (self.colour == old_card.colour or self.name == old_card.name)
             return False
+
         elif action_type == FREEZE:
             if isinstance(self.function, tuple):
                return self.function[0] == FREEZE
             return False
+
         elif action_type == DEMAND:
             if isinstance(self.function, tuple):
-                return self.name == old_card.name
-            elif game_actions.demanded_type == c_dict.DEMAND_OPTIONS_NAMES['JACK']:
+                if self.name == old_card.name:
+                    return True
+
+            if game_actions.demanded_type == c_dict.DEMAND_OPTIONS_NAMES['JACK']:
                 return self.name == game_actions.demanded_value
             elif game_actions.demanded_type == c_dict.DEMAND_OPTIONS_NAMES['ACE']:
                 return self.colour == game_actions.demanded_value
