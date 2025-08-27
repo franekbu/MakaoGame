@@ -1,7 +1,7 @@
 from makao_game import Game, ConsoleIOHandler
 
-io_connection: ConsoleIOHandler = ConsoleIOHandler()
-game = Game(io_connection)
+console: ConsoleIOHandler = ConsoleIOHandler()
+game = Game(io_handler=console)
 
 game.start_game()
 game.show_leaderboard()

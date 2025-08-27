@@ -14,8 +14,8 @@ from .dictionaries import (NAMES, FUNCTIONS, COLOURS, CSV_HEADERS, DATA_DIR_NAME
                            ASCII_COLOURS, ASCII_END, ASCII_START, FUNCTIONS_TYPES_NAMES, FUNCTIONS_DESCRIPTIONS)
 
 # tells what will ve imported if * used
-__all__ = ['Card', 'Player', 'BotPlayer', 'Game', 'CardsActions', 'get_data_path', 'colour_string', 'ConsoleIOHandler',
-           'IOHandler', 'NAMES', 'FUNCTIONS', 'COLOURS', 'CSV_HEADERS', 'DATA_DIR_NAME', 'MAX_NUM_OF_PLAYERS',
+__all__ = ['Card', 'Player', 'BotPlayer', 'Game', 'CardsActions', 'get_data_path', 'colour_string', 'IOHandler',
+           'ConsoleIOHandler', 'NAMES', 'FUNCTIONS', 'COLOURS', 'CSV_HEADERS', 'DATA_DIR_NAME', 'MAX_NUM_OF_PLAYERS',
            'ASCII_START', 'ASCII_END', 'ASCII_COLOURS', 'FUNCTIONS_DESCRIPTIONS', 'FUNCTIONS_TYPES_NAMES']
 
 print("Module 'makao_game' was imported!") # telling if import was successful
