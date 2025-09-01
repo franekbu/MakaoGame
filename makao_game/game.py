@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 import pandas as pd  # type: ignore
 import random
@@ -16,40 +17,55 @@ class Game:
         Creates class that handles all logic in a game
         """
         self.io_handler: IOHandler = io_handler
-        self.players: list[Player | BotPlayer] = self._handle_players_creation(**names)
+
+        self._names: dict[str, list[str]] = names
+        self.players: list[Player | BotPlayer] = []
+        self.current_player: Player | BotPlayer | None = None
         self.finishers: list[Player | BotPlayer] = []
-        self.main_deck: list[Card] = self._create_deck()
-        self._dealing_cards()
-        self.play_deck: list[Card] = [self._start_card()] # deck where you put cards you play
+
+        self.main_deck: list[Card] = []
+        self.play_deck: list[Card] = []
         self.actions: CardsActions = CardsActions()
-        self.current_player: Player | BotPlayer = self.players[0]
+
         self.turn: int = 0
         self.game_data: list[dict[str, str | int | bool | None]] = []
         self.data_dir_path: str = get_data_path()
 
-    # maybe upgrade it a little
     def __str__(self):
         return f'Game players: {[player.name for player in self.players]}'
 
-    def _create_deck(self) -> list[Card]:
-        """Returns list of card, representing whole standard cards deck"""
-        deck: list = []
-        allow_ascii: bool = self.io_handler.allow_ascii()
-        for num in range(2, 15):
-            for colour in range(1, 5):
-                deck.append(
-                    Card(
-                        num=num,
-                        colour_series=colour,
-                        allow_ascii=allow_ascii
-                    )
-                )
-        return deck
+    async def run_game(self):
+        """Starts the game and keeps it on until one player remains"""
+        await self._prepare_game()
+        while len(self.players) > 1:
+            self.turn += 1
+            await self._player_turn(self.current_player)
 
-    @staticmethod
-    def _deck_to_print(deck_to_show: list[Card]) -> str:
-        """Returns string of cards in chosen deck that is ready to be printed"""
-        return ', '.join([f'{i + 1}:{card}' for i, card in enumerate(deck_to_show)])
+    async def _prepare_game(self) -> None:
+        self.players = (await asyncio.gather(self._handle_players_creation()))[0]
+        self.current_player = self.players[0]
+
+        self.main_deck = self._create_deck()
+        self._dealing_cards()
+        self.play_deck = [self._start_card()]
+
+    async def _handle_players_creation(self) -> list[Player | BotPlayer]:
+        """available kwargs: players, bots\n
+        If no kwargs used ask user what names and how may human or bot players he wants\n
+        returns list of objects of players from class Player and BotPlayer
+        """
+        all_players: list[Player | BotPlayer]
+        if self._names:
+            all_players = self._create_players_from_kwargs(
+                pre_players_names=self._names.get('players', []),
+                pre_bots_names=self._names.get('bots', []))
+        else:
+            all_players = await self._create_input_players()
+
+        shuffle: str = await self.io_handler.get_user_input('Do you want to shuffle the order of players?')
+        if shuffle.lower() in ['yes', 'y']:
+            random.shuffle(all_players)
+        return all_players
 
     def _create_players_from_kwargs(self, pre_players_names: list[str], pre_bots_names: list[str]) -> list[Player | BotPlayer]:
         """Checks if names from kwargs pass conditions, then creates from them players and bots and returns them"""
@@ -83,18 +99,18 @@ class Game:
 
         return [*players, *bots]
 
-    def _create_input_players(self) -> list[Player | BotPlayer]:
+    async def _create_input_players(self) -> list[Player | BotPlayer]:
         """Ask player how many players: human or bot, he wants to play, and returns the list of them"""
-        play_with_bots: str = self.io_handler.get_user_input('Do you want to play with bots?')
+        play_with_bots: str = await self.io_handler.get_user_input('Do you want to play with bots?')
         num_players: int = 0
         num_bots: int = 0
         if play_with_bots.lower() in ['y', 'yes']:
             while True:
                 try:
-                    num_players = int(self.io_handler.get_user_input('How many human players do you want to play?'))
-                    num_bots = int(self.io_handler.get_user_input('How many bots players do you want to play?'))
+                    num_players = int(await self.io_handler.get_user_input('How many human players do you want to play?'))
+                    num_bots = int(await self.io_handler.get_user_input('How many bots players do you want to play?'))
                     if num_players + num_bots < 2 or num_players + num_bots > c_dict.MAX_NUM_OF_PLAYERS:
-                        self.io_handler.display_message(
+                        await self.io_handler.display_message(
                             message='Number of all players combined (humans and bots) must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!',
                             warning=True
                         )
@@ -102,7 +118,7 @@ class Game:
                         break
 
                 except ValueError:
-                    self.io_handler.display_message(
+                    await self.io_handler.display_message(
                         message='Invalid input!\nPlease input only numbers',
                         warning=True
                     )
@@ -110,9 +126,9 @@ class Game:
         else:
             while True:
                 try:
-                    num_players = int(self.io_handler.get_user_input('How many human players do you want to play?'))
+                    num_players = int(await self.io_handler.get_user_input('How many human players do you want to play?'))
                     if num_players < 2 or num_players > c_dict.MAX_NUM_OF_PLAYERS:
-                        self.io_handler.display_message(
+                        await self.io_handler.display_message(
                             message=f'Number of all players must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!',
                             warning=True
                         )
@@ -120,7 +136,7 @@ class Game:
                         break
 
                 except ValueError:
-                    self.io_handler.display_message(
+                    await self.io_handler.display_message(
                         message='Invalid input!\nPlease input only numbers',
                         warning=True
                     )
@@ -132,13 +148,13 @@ class Game:
 
         name: str
         for i in range(num_players):
-            name = self.io_handler.get_user_input(f'What is {i + 1}. player name?')
+            name = await self.io_handler.get_user_input(f'What is {i + 1}. player name?')
             while name.replace(" ", "") in used_names:
-                self.io_handler.display_message(
+                await self.io_handler.display_message(
                     message='Names cannot repeat!',
                     warning=True
                 )
-                name = self.io_handler.get_user_input(f'What is {i + 1}. player name?')
+                name = await self.io_handler.get_user_input(f'What is {i + 1}. player name?')
             players.append(
                 Player(
                     player_name=name,
@@ -148,13 +164,13 @@ class Game:
             used_names.append(name)
 
         for i in range(num_bots):
-            name = self.io_handler.get_user_input(f'What is {i + 1}. bot name?')
+            name = await self.io_handler.get_user_input(f'What is {i + 1}. bot name?')
             while name.replace(" ", "") in used_names:
-                self.io_handler.display_message(
+                await self.io_handler.display_message(
                     message='Names cannot repeat!',
                     warning=True
                 )
-                name = self.io_handler.get_user_input(f'What is {i + 1}. bot name?')
+                name = await self.io_handler.get_user_input(f'What is {i + 1}. bot name?')
             bots.append(
                 BotPlayer(
                     bot_name=name,
@@ -165,34 +181,26 @@ class Game:
 
         return [*players, *bots]
 
-    def _handle_players_creation(self, **pre_names: list[str]) -> list[Player | BotPlayer]:
-        """available kwargs: players, bots\n
-        If no kwargs used ask user what names and how may human or bot players he wants\n
-        returns list of objects of players from class Player and BotPlayer
-        """
-        all_players: list[Player | BotPlayer]
-        if pre_names:
-            all_players = self._create_players_from_kwargs(
-                pre_players_names=pre_names.get('players', []),
-                pre_bots_names=pre_names.get('bots', []))
-        else:
-            all_players = self._create_input_players()
-
-        shuffle: str = self.io_handler.get_user_input('Do you want to shuffle the order of players?')
-        if shuffle.lower() in ['yes', 'y']:
-            random.shuffle(all_players)
-        return all_players
-
-    @staticmethod
-    def _shuffle_deck(deck: list[Card]) -> None:
-        """Just shuffle the deck"""
-        random.shuffle(deck)
+    def _create_deck(self) -> list[Card]:
+        """Returns list of card, representing whole standard cards deck"""
+        deck: list = []
+        allow_ascii: bool = self.io_handler.allow_ascii()
+        for num in range(2, 15):
+            for colour in range(1, 5):
+                deck.append(
+                    Card(
+                        num=num,
+                        colour_series=colour,
+                        allow_ascii=allow_ascii
+                    )
+                )
+        return deck
 
     def _dealing_cards(self):
         """Deals cards among players\n
         if number of players is grater than 3 deals each 5 cards, else 7
         """
-        self._shuffle_deck(self.main_deck)
+        random.shuffle(self.main_deck)
         if len(self.players) < 4:
             num_of_cards = 7
         else:
@@ -212,51 +220,149 @@ class Game:
         self.main_deck.remove(card)
         return card
 
-    def _pull_cards(self, num_of_cards) -> list[Card]:
-        """Returns list of cards for player to pull"""
-        new_cards: list[Card] = []
-        for num in range(0, num_of_cards):
-            if len(self.main_deck) == 0:
-                self._update_main_deck()
-            try:
-                new_cards.append(self.main_deck[0])
-                self.main_deck.pop(0)
-            except IndexError:
-                self.io_handler.display_message(
-                    message='You ran out of cards to pull\nPlay your damn cards!',
-                    warning=True
-                )
-                return []
-        return new_cards
+    async def _player_turn(self, player: Player | BotPlayer) -> None:
+        """All logic about player's turn"""
 
-    def _update_main_deck(self) -> None:
-        """Takes cards from overstacking play_deck and returns them to main_deck so players can pull them from it"""
-        if len(self.main_deck) < 21:
-            while len(self.play_deck) > 1:
-                self.main_deck.append(self.play_deck[-1])
-                self.play_deck.pop(-1)
-        self._shuffle_deck(self.main_deck)
+        player.played_card = False # have to reset it every new turn so if he doesn't make it won't show he did from the last turn
+        was_frozen: bool = False
+        start_deck_size: int = len(player.deck)
+        start_top_card: Card = self.play_deck[0]
 
-    def _display_turn_start_info(self) -> None:
+        await self._display_turn_start_info()
+
+        if player.frozen_rows > 0:
+            was_frozen = True
+            await self._handle_frozen_player()
+        else:
+            player.have_valid_cards(self.play_deck[0], self.actions)
+            pass_or_play: str = ''
+
+            if player.valid_cards:
+                pass_or_play = await player.play_or_pass()
+
+                if pass_or_play == 'play':
+                    await self._handle_player_move()
+                    player.played_card = True
+
+                elif pass_or_play == 'pass' and isinstance(player, BotPlayer):
+                    await self.io_handler.display_message(
+                        message='Bot passes his turn.\n'
+                    )
+
+            if not player.valid_cards or pass_or_play == 'pass':
+                await self._handle_no_play_action(pass_or_play == 'pass')
+
+        player.turn += 1
+        self._collect_data(was_frozen, start_deck_size, start_top_card)
+        self._next_player()
+
+        if len(player.deck) == 0:
+            await self._handle_finisher(player)
+
+    async def _display_turn_start_info(self) -> None:
         """Display info at the beginning of player's turn such as:\n
         - what card is on the table\n
         - what are demands\n
         - what is his deck
         """
+        assert isinstance(self.current_player, Player | BotPlayer)
         player: Player | BotPlayer = self.current_player
-        self.io_handler.display_message(
+
+        await self.io_handler.display_message(
             message=f'Card on a table: {self.play_deck[0]}'
         )
         if self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['DEMAND']:
-            self.io_handler.display_message(
+            await self.io_handler.display_message(
                 message=f'Your are demanded to play: {self.actions.demanded_value}'
             )
-        self.io_handler.display_message(
+        await self.io_handler.display_message(
             message=f'{player.name} this is your deck:\n{self._deck_to_print(player.deck)}'
         )
 
+    @staticmethod
+    def _deck_to_print(deck_to_show: list[Card]) -> str:
+        """Returns string of cards in chosen deck that is ready to be printed"""
+        return ', '.join([f'{i + 1}:{card}' for i, card in enumerate(deck_to_show)])
+
+    async def _handle_frozen_player(self) -> None:
+        """Handle cases when player was frozen at the start of his turn"""
+        assert isinstance(self.current_player, Player | BotPlayer)
+        player: Player | BotPlayer = self.current_player
+
+        await self.io_handler.display_message(
+            message=f'{player.name} was frozen.'
+        )
+        player.frozen_rows -= 1
+        # skip his turn in demands to colour/number
+        if self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['DEMAND']:
+            if self.actions.demands_duration > 1:
+                self.actions.demands_duration -= 1
+            else:
+                # can this even happen?
+                self.actions.reset_actions()
+
+    async def _handle_player_move(self) -> None:
+        """PLayer chooses and plays the cards and then if needed says makao"""
+        assert isinstance(self.current_player, Player | BotPlayer)
+        player: Player | BotPlayer = self.current_player
+
+        cards_to_play: list[Card] = await player.choose_card(self.play_deck[0], self.actions)
+        for card in cards_to_play:
+            self.play_deck.insert(0, card)
+            player.deck.remove(card)
+
+        self.actions.apply_card_effects(self.play_deck[0].function, len(cards_to_play), len(self.players))
+        if self.actions.update_player_inputs:
+            assert isinstance(self.actions.demanded_type, str)
+            demand: str = await player.handle_demanding(self.actions.demanded_type)
+            self.actions.update_actions_with_player_inputs(demand)
+
+        if not await player.say_makao():
+            player.deck.extend(await self._pull_cards(5))
+
+    async def _handle_no_play_action(self, passed: bool) -> None:
+        """Handles logic when player didn't have valid cards or passed his turn
+        accordingly changes demands, stacks and decide how much player has to pull
+        """
+        assert isinstance(self.current_player, Player | BotPlayer)
+        player: Player | BotPlayer = self.current_player
+        # TODO 2. Make available to play first pulled card if it can be played
+        if self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['FREEZE']:
+            player.frozen_rows = self.actions.freeze_stack - 1  # - 1 because already he is frozen in this round
+            self.actions.reset_actions()
+
+        elif self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['DEMAND']:
+            player.deck.extend(await self._pull_cards(1))
+            await self.io_handler.display_message(
+                message=f'{player.name} did not have valid cards, he pulled new card'
+            )
+            if self.actions.demands_duration > 1:
+                self.actions.demands_duration -= 1
+            else:
+                self.actions.reset_actions()
+
+        elif self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['PULL']:
+            player.deck.extend(await self._pull_cards(self.actions.pull_stack))
+            await self.io_handler.display_message(
+                message=f'{player.name} did not have valid cards, he pulled {self.actions.pull_stack} new cards'
+            )
+            self.actions.reset_actions()
+
+        else:
+            player.deck.extend(await self._pull_cards(1))
+            self.actions.reset_actions()
+            if passed:
+                await self.io_handler.display_message(
+                    message=f'{player.name} did not want to play his cards, he pulled new one'
+                )
+            else:
+                await self.io_handler.display_message(
+                    message=f'{player.name} did not have valid cards, he pulled new card'
+                )
+
     def _next_player(self) -> None:
         """Sets new current player for a next round"""
+        assert isinstance(self.current_player, Player | BotPlayer)
         c_player =  self.players.index(self.current_player)
         if not self.actions.reversed_order:
             try:
@@ -269,149 +375,48 @@ class Game:
             except IndexError:
                 self.current_player = self.players[-1]
 
-    def _handle_finisher(self, player: Player | BotPlayer):
+    async def _handle_finisher(self, player: Player | BotPlayer):
         """Removes player from active players list adds him to finishers and checks if demands len should be shortened"""
         # checking if he just played demands card
         if (self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['DEMAND'] and
                 self.actions.demands_duration == len(self.players)):
             self.actions.demands_duration -= 1
 
-        self.io_handler.display_message(
+        await self.io_handler.display_message(
             message='Congrats!!! You finished the game!',
             warning=True
         )
         self.finishers.append(player)
         self.players.remove(player)
 
-    def _handle_no_play_action(self, passed: bool) -> None:
-        """Handles logic when player didn't have valid cards or passed his turn
-        accordingly changes demands, stacks and decide how much player has to pull
-        """
-        player: Player | BotPlayer = self.current_player
-        # TODO 2. Make available to play first pulled card if it can be played
-        if self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['FREEZE']:
-            player.frozen_rows = self.actions.freeze_stack - 1  # - 1 because already he is frozen in this round
-            self.actions.reset_actions()
-
-        elif self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['DEMAND']:
-            player.deck.extend(self._pull_cards(1))
-            self.io_handler.display_message(
-                message=f'{player.name} did not have valid cards, he pulled new card'
-            )
-            if self.actions.demands_duration > 1:
-                self.actions.demands_duration -= 1
-            else:
-                self.actions.reset_actions()
-
-        elif self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['PULL']:
-            player.deck.extend(self._pull_cards(self.actions.pull_stack))
-            self.io_handler.display_message(
-                message=f'{player.name} did not have valid cards, he pulled {self.actions.pull_stack} new cards'
-            )
-            self.actions.reset_actions()
-
-        else:
-            player.deck.extend(self._pull_cards(1))
-            self.actions.reset_actions()
-            if passed:
-                self.io_handler.display_message(
-                    message=f'{player.name} did not want to play his cards, he pulled new one'
+    async def _pull_cards(self, num_of_cards) -> list[Card]:
+        """Returns list of cards for player to pull"""
+        new_cards: list[Card] = []
+        for num in range(0, num_of_cards):
+            if len(self.main_deck) == 0:
+                self._update_main_deck()
+            try:
+                new_cards.append(self.main_deck[0])
+                self.main_deck.pop(0)
+            except IndexError:
+                await self.io_handler.display_message(
+                    message='You ran out of cards to pull\nPlay your damn cards!',
+                    warning=True
                 )
-            else:
-                self.io_handler.display_message(
-                    message=f'{player.name} did not have valid cards, he pulled new card'
-                )
+                return []
+        return new_cards
 
-    def _handle_player_move(self) -> None:
-        """PLayer chooses and plays the cards and then if needed says makao"""
-        player: Player | BotPlayer = self.current_player
-
-        cards_to_play: list[Card] = player.choose_card(self.play_deck[0], self.actions)
-        for card in cards_to_play:
-            self.play_deck.insert(0, card)
-            player.deck.remove(card)
-
-        self.actions.apply_card_effects(self.play_deck[0].function, len(cards_to_play), len(self.players))
-        if self.actions.update_player_inputs:
-            assert isinstance(self.actions.demanded_type, str)
-            demand: str = player.handle_demanding(self.actions.demanded_type)
-            self.actions.update_actions_with_player_inputs(demand)
-
-        if not player.say_makao():
-            player.deck.extend(self._pull_cards(5))
-
-    def _handle_frozen_player(self) -> None:
-        """Handle cases when player was frozen at the start of his turn"""
-        player: Player | BotPlayer = self.current_player
-        self.io_handler.display_message(
-            message=f'{player.name} was frozen.'
-        )
-        player.frozen_rows -= 1
-        # skip his turn in demands to colour/number
-        if self.actions.action_type == c_dict.FUNCTIONS_TYPES_NAMES['DEMAND']:
-            if self.actions.demands_duration > 1:
-                self.actions.demands_duration -= 1
-            else:
-                # can this even happen?
-                self.actions.reset_actions()
-
-    def _player_turn(self, player: Player | BotPlayer) -> None:
-        """All logic about player's turn"""
-
-        player.played_card = False # have to reset it every new turn so if he doesn't make it won't show he did from the last turn
-        was_frozen: bool = False
-        start_deck_size: int = len(self.current_player.deck)
-        start_top_card: Card = self.play_deck[0]
-
-        self._display_turn_start_info()
-
-        if player.frozen_rows > 0:
-            was_frozen = True
-            self._handle_frozen_player()
-        else:
-            player.have_valid_cards(self.play_deck[0], self.actions)
-            pass_or_play: str = ''
-
-            if player.valid_cards:
-                pass_or_play = player.play_or_pass()
-
-                if pass_or_play == 'play':
-                    self._handle_player_move()
-                    player.played_card = True
-
-                elif pass_or_play == 'pass' and isinstance(player, BotPlayer):
-                    self.io_handler.display_message(
-                        message='Bot passes his turn.\n'
-                    )
-
-            if not player.valid_cards or pass_or_play == 'pass':
-                self._handle_no_play_action(pass_or_play == 'pass')
-
-        player.turn += 1
-        self._collect_data(was_frozen, start_deck_size, start_top_card)
-        self._next_player()
-
-        if len(player.deck) == 0:
-            self._handle_finisher(player)
-
-    def start_game(self):
-        """Starts the game and keeps it on until one player remains"""
-        while len(self.players) > 1:
-            self.turn += 1
-            self._player_turn(self.current_player)
-
-    def show_leaderboard(self):
-        """Prints the leaderboard of the game - who had which place and who was last """
-        for num, player in enumerate(self.finishers):
-            self.io_handler.display_message(
-                message=f'{num + 1}. place takes: {player.name}'
-            )
-        self.io_handler.display_message(
-            message=f'Last place takes: {self.players[0].name}'
-        )
+    def _update_main_deck(self) -> None:
+        """Takes cards from overstacking play_deck and returns them to main_deck so players can pull them from it"""
+        if len(self.main_deck) < 21:
+            while len(self.play_deck) > 1:
+                self.main_deck.append(self.play_deck[-1])
+                self.play_deck.pop(-1)
+        random.shuffle(self.main_deck)
 
     def _collect_data(self, frozen_before: bool, deck_size_before: int, top_card_before: Card) -> None:
         """Takes few datas from the beginning of the turn as arguments, then collects actual data and saves it as dict"""
+        assert isinstance(self.current_player, Player | BotPlayer)
         turn_data: dict[str, str | int | bool | None] = {
             'Game_move': self.turn,
             'Player_name': self.current_player.name,
@@ -466,6 +471,16 @@ class Game:
             turn_data['Pulled_cards_names'] = '|'.join([repr(self.current_player.deck[-i]) for i in range(1, card_pulled + 1)])
 
         self.game_data.append(turn_data)
+
+    async def show_leaderboard(self):
+        """Prints the leaderboard of the game - who had which place and who was last """
+        for num, player in enumerate(self.finishers):
+            await self.io_handler.display_message(
+                message=f'{num + 1}. place takes: {player.name}'
+            )
+        await self.io_handler.display_message(
+            message=f'Last place takes: {self.players[0].name}'
+        )
 
     def save_data(self) -> None:
         """Takes list of dicts of data saved from game turns and saves it in .csv file"""
