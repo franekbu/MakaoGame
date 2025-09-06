@@ -11,29 +11,18 @@ ABOLISH: str = c_dict.FUNCTIONS_TYPES_NAMES['ABOLISH']
 REVERSE: str = c_dict.FUNCTIONS_TYPES_NAMES['REVERSE']
 
 class Card:
-    def __init__(self, num: int, colour_series: int, allow_ascii: bool) -> None:
+    def __init__(self, num: int, colour_series: int, display_symbols: dict[str, str]) -> None:
         """Creates a card object that represent a card from a deck in a game """
         self._number: int = num
         self.name: str = self._what_name()
         self.symbol: str = self._what_colour(colour_series, 's')
         self.colour: str = self._what_colour(colour_series, 'c')
         self.function: tuple[str, str | int] | None = self._what_function()
-        self._ascii: bool = allow_ascii
+        self._str: str = display_symbols[self.colour]
 
     def __str__(self) -> str:
-        """Cards name and symbol\n
-        If at creating colouring_card set to True:
-        Cards symbols have added colours by attached ASCII
-        """
-        symbol: str
-        if self._ascii:
-            if self.colour in ['Diamonds', 'Hearts']:
-                symbol = colour_string(self.symbol, 'red')
-            else:
-                symbol = colour_string(self.symbol, 'black', 'bg')
-        else:
-            symbol = self.symbol
-        return f'{self.name}{symbol}'
+        """Cards name and symbol to display provided at creation"""
+        return f'{self.name}{self._str}'
 
     def __repr__(self) -> str:
         """Cards name and symbol\n

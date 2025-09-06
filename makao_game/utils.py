@@ -10,7 +10,9 @@ def get_data_path() -> str:
     return os.path.join(project_root_dir, c_dict.DATA_DIR_NAME)
 
 def colour_string(text: str, colour: str, bg_colour: str = '') -> str:
-    """Returns string of text of specified colour in ASCII format."""
+    """Returns string of text of specified colour in ASCII format.
+    Supported colours: red, black, yellow, bg.
+    """
 
     if not text or not colour:
         raise ValueError('text cannot be empty')

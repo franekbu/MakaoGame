@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import asyncio
 
 from makao_game.utils import colour_string
+from makao_game.dictionaries import COLOURS
 
 class IOHandler(ABC):
     @abstractmethod
@@ -17,8 +18,8 @@ class IOHandler(ABC):
         pass
 
     @abstractmethod
-    def allow_ascii(self) -> bool:
-        """Returns True if IOHandler allows ascii to be passed"""
+    def supported_symbols(self) -> dict[str, str]:
+        """Returns dict with key of colour card and value of what to display to user instead of raw symbols"""
         pass
 
 class ConsoleIOHandler(IOHandler):
@@ -31,5 +32,12 @@ class ConsoleIOHandler(IOHandler):
             message = colour_string(message, 'red')
         await asyncio.to_thread(print, message)
 
-    def allow_ascii(self) -> bool:
-        return True
+    def supported_symbols(self) -> dict[str, str]:
+        symbols: dict[str, str] = {COLOURS[num]['name']: COLOURS[num]['symbol'] for num in COLOURS}
+        for colour in symbols:
+            if colour in ['Hearts', 'Diamonds']:
+                symbols[colour] = colour_string(symbols[colour], 'red')
+            else:
+                symbols[colour] = colour_string(symbols[colour], colour='black', bg_colour='bg')
+
+        return symbols
