@@ -184,14 +184,14 @@ class Game:
     def _create_deck(self) -> list[Card]:
         """Returns list of card, representing whole standard cards deck"""
         deck: list = []
-        allow_ascii: bool = self.io_handler.allow_ascii()
+        symbols: dict[str, str] = self.io_handler.supported_symbols()
         for num in range(2, 15):
             for colour in range(1, 5):
                 deck.append(
                     Card(
                         num=num,
                         colour_series=colour,
-                        allow_ascii=allow_ascii
+                        display_symbols=symbols
                     )
                 )
         return deck
