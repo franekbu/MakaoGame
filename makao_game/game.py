@@ -39,6 +39,8 @@ class Game:
         await self._prepare_game()
         while len(self.players) > 1:
             self.turn += 1
+
+            assert isinstance(self.current_player, Player | BotPlayer)
             await self._player_turn(self.current_player)
 
     async def _prepare_game(self) -> None:
