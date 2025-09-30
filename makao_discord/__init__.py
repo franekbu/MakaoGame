@@ -1,6 +1,14 @@
-# from makao_discord.discord_io_handler import DiscordIOHandler
-# from makao_discord.makao_bot import MakaoBot
-#
-# __all__ = ['MakaoBot', 'DiscordIOHandler']
-#
-# print('makao_discord package imported')
+from .discord_io_handler import DiscordIOHandler
+from .makao_bot import MakaoBot
+from .command_syntax import MAIN_COMMAND, SUB_COMMANDS, FLAGS, EXAMPLE
+
+__all__ = [
+    'MakaoBot',
+    'DiscordIOHandler',
+    'MAIN_COMMAND',
+    'SUB_COMMANDS',
+    'FLAGS',
+    'EXAMPLE'
+]
+
+print('makao_discord package imported')
