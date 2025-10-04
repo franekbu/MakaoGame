@@ -1,12 +1,21 @@
 from abc import ABC, abstractmethod
 import asyncio
+from enum import Enum
 
 from makao_game.utils import colour_string
 from makao_game.dictionaries import COLOURS
 
+class IODataType(Enum):
+    MAKAO = 'makao'
+    DEMAND = 'demand'
+    CARD = 'card'
+    GAME = 'game'
+    PLAY_PASS = 'play'
+    YES_NO = 'yes'
+
 class IOHandler(ABC):
     @abstractmethod
-    async def get_user_input(self, message: str = '') -> str:
+    async def get_user_input(self, data_type: IODataType, message: str = '') -> str:
         """Takes user's input and returns it"""
         pass
 
@@ -23,7 +32,7 @@ class IOHandler(ABC):
         pass
 
 class ConsoleIOHandler(IOHandler):
-    async def get_user_input(self, message: str = '') -> str:
+    async def get_user_input(self, data_type: IODataType, message: str = '') -> str:
         user_input: str = await asyncio.to_thread(input, message)
         return user_input
 

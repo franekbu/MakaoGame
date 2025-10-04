@@ -9,7 +9,7 @@ from makao_game import dictionaries as c_dict
 from makao_game.utils import get_data_path
 from makao_game.cards import Card
 from makao_game.cards_actions import CardsActions
-from makao_game.io_handler import IOHandler
+from makao_game.io_handler import IOHandler, IODataType
 
 class Game:
     def __init__(self, io_handler: IOHandler, **names: list[str]) -> None:
@@ -64,7 +64,10 @@ class Game:
         else:
             all_players = await self._create_input_players()
 
-        shuffle: str = await self.io_handler.get_user_input('Do you want to shuffle the order of players?')
+        shuffle: str = await self.io_handler.get_user_input(
+            data_type=IODataType.YES_NO,
+            message='Do you want to shuffle the order of players?'
+        )
         if shuffle.lower() in ['yes', 'y']:
             random.shuffle(all_players)
         return all_players
@@ -103,14 +106,24 @@ class Game:
 
     async def _create_input_players(self) -> list[Player | BotPlayer]:
         """Ask player how many players: human or bot, he wants to play, and returns the list of them"""
-        play_with_bots: str = await self.io_handler.get_user_input('Do you want to play with bots?')
+
+        play_with_bots: str = await self.io_handler.get_user_input(
+            data_type=IODataType.YES_NO,
+            message='Do you want to play with bots?'
+        )
         num_players: int = 0
         num_bots: int = 0
         if play_with_bots.lower() in ['y', 'yes']:
             while True:
                 try:
-                    num_players = int(await self.io_handler.get_user_input('How many human players do you want to play?'))
-                    num_bots = int(await self.io_handler.get_user_input('How many bots players do you want to play?'))
+                    num_players = int(await self.io_handler.get_user_input(
+                        data_type=IODataType.GAME,
+                        message='How many human players do you want to play?')
+                    )
+                    num_bots = int(await self.io_handler.get_user_input(
+                        data_type=IODataType.GAME,
+                        message='How many bots players do you want to play?')
+                    )
                     if num_players + num_bots < 2 or num_players + num_bots > c_dict.MAX_NUM_OF_PLAYERS:
                         await self.io_handler.display_message(
                             message='Number of all players combined (humans and bots) must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!',
@@ -128,7 +141,10 @@ class Game:
         else:
             while True:
                 try:
-                    num_players = int(await self.io_handler.get_user_input('How many human players do you want to play?'))
+                    num_players = int(await self.io_handler.get_user_input(
+                        data_type=IODataType.GAME,
+                        message='How many human players do you want to play?')
+                    )
                     if num_players < 2 or num_players > c_dict.MAX_NUM_OF_PLAYERS:
                         await self.io_handler.display_message(
                             message=f'Number of all players must be within 2 and {c_dict.MAX_NUM_OF_PLAYERS}!',
@@ -150,13 +166,19 @@ class Game:
 
         name: str
         for i in range(num_players):
-            name = await self.io_handler.get_user_input(f'What is {i + 1}. player name?')
+            name = await self.io_handler.get_user_input(
+                data_type=IODataType.GAME,
+                message=f'What is {i + 1}. player name?'
+            )
             while name.replace(" ", "") in used_names:
                 await self.io_handler.display_message(
                     message='Names cannot repeat!',
                     warning=True
                 )
-                name = await self.io_handler.get_user_input(f'What is {i + 1}. player name?')
+                name = await self.io_handler.get_user_input(
+                    data_type=IODataType.GAME,
+                    message=f'What is {i + 1}. player name?'
+                )
             players.append(
                 Player(
                     player_name=name,
@@ -166,13 +188,19 @@ class Game:
             used_names.append(name)
 
         for i in range(num_bots):
-            name = await self.io_handler.get_user_input(f'What is {i + 1}. bot name?')
+            name = await self.io_handler.get_user_input(
+                data_type=IODataType.GAME,
+                message=f'What is {i + 1}. bot name?'
+            )
             while name.replace(" ", "") in used_names:
                 await self.io_handler.display_message(
                     message='Names cannot repeat!',
                     warning=True
                 )
-                name = await self.io_handler.get_user_input(f'What is {i + 1}. bot name?')
+                name = await self.io_handler.get_user_input(
+                    data_type=IODataType.GAME,
+                    message=f'What is {i + 1}. bot name?'
+                )
             bots.append(
                 BotPlayer(
                     bot_name=name,
@@ -409,7 +437,7 @@ class Game:
         return new_cards
 
     def _update_main_deck(self) -> None:
-        """Takes cards from overstacking play_deck and returns them to main_deck so players can pull them from it"""
+        """Takes cards from overstocking play_deck and returns them to main_deck so players can pull them from it"""
         if len(self.main_deck) < 21:
             while len(self.play_deck) > 1:
                 self.main_deck.append(self.play_deck[-1])
@@ -417,7 +445,7 @@ class Game:
         random.shuffle(self.main_deck)
 
     def _collect_data(self, frozen_before: bool, deck_size_before: int, top_card_before: Card) -> None:
-        """Takes few datas from the beginning of the turn as arguments, then collects actual data and saves it as dict"""
+        """Takes few data from the beginning of the turn as arguments, then collects actual data and saves it as dict"""
         assert isinstance(self.current_player, Player | BotPlayer)
         turn_data: dict[str, str | int | bool | None] = {
             'Game_move': self.turn,
