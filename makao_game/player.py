@@ -22,6 +22,7 @@ class Player:
 
         response: str = await self.io_handler.get_user_input(
             data_type=IODataType.PLAY_PASS, 
+            username=self.name,
             message='Do you want to play or pass? '
         )
 
@@ -31,7 +32,8 @@ class Player:
                 warning=True
             )
             response = await self.io_handler.get_user_input(
-                data_type=IODataType.PLAY_PASS, 
+                data_type=IODataType.PLAY_PASS,
+                username=self.name,
                 message='So what do you do? '
             )
         return response
@@ -59,6 +61,7 @@ class Player:
         )
         demanded_color: str = await self.io_handler.get_user_input(
             data_type=IODataType.DEMAND, 
+            username=self.name,
             message='What colour do you demand?: '
         )
 
@@ -69,6 +72,7 @@ class Player:
             )
             demanded_color = await self.io_handler.get_user_input(
                 data_type=IODataType.DEMAND, 
+                username=self.name,
                 message='So what colour do you demand?: '
             )
 
@@ -81,6 +85,7 @@ class Player:
             try:
                 demanded_number = await self.io_handler.get_user_input(
                     data_type=IODataType.DEMAND, 
+                    username=self.name,
                     message='What number do you demand?: '
                 )
                 while 4 > int(demanded_number) or int(demanded_number) > 10:
@@ -89,7 +94,8 @@ class Player:
                         warning=True
                     )
                     demanded_number = await self.io_handler.get_user_input(
-                        data_type=IODataType.DEMAND, 
+                        data_type=IODataType.DEMAND,  
+                        username=self.name,
                         message='So what number do you demand?: '
                     )
                 return demanded_number
@@ -120,7 +126,8 @@ class Player:
             chosen_nums: list[int] = []
             while not suc_choice:
                 p_choice: str = await self.io_handler.get_user_input(
-                    data_type=IODataType.CARD,
+                    data_type=IODataType.CARD, 
+                    username=self.name,
                     message='What card/s you want to play?(give number/s of card/s): '
                 )
                 p_nums: list[str]
@@ -132,7 +139,8 @@ class Player:
                             warning=True
                         )
                         p_choice = await self.io_handler.get_user_input(
-                            data_type=IODataType.CARD,
+                            data_type=IODataType.CARD, 
+                            username=self.name,
                             message='What card/s you want to play?(give number/s of card/s): '
                         )
                         p_nums = p_choice.split(',')
@@ -188,6 +196,7 @@ class Player:
         returns False if he didn't say when he had to"""
 
         makao_time = await self.io_handler.get_user_input(
+            username=self.name,
             data_type=IODataType.MAKAO
         )
         makao_time = makao_time.lower()
